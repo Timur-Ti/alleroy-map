@@ -1,1 +1,607 @@
 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+      maximum-scale=1.0, user-scalable=no">
+
+<title>Аллерой Доставка</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    background: #f4f5f7;
+}
+
+.header {
+    background: white;
+    padding: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.15);
+    z-index: 1000;
+}
+
+.title {
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.subtitle {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #666;
+}
+
+.search {
+    display: flex;
+    gap: 7px;
+    margin-top: 10px;
+}
+
+.search input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+}
+
+.search button {
+    border: none;
+    border-radius: 12px;
+    padding: 0 16px;
+    background: #eeeeee;
+    font-size: 18px;
+}
+
+#map {
+    flex: 1;
+    min-height: 300px;
+}
+
+.bottom {
+    background: white;
+    padding: 12px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,.15);
+    z-index: 1000;
+}
+
+.location-button,
+.address-button {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f0f1f2;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.selected {
+    font-size: 14px;
+    margin: 5px 0 9px;
+    min-height: 20px;
+}
+
+.choose {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    background: #2481cc;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.choose:disabled {
+    opacity: .45;
+}
+
+.hint {
+    text-align: center;
+    color: #777;
+    font-size: 12px;
+    margin-top: 7px;
+}
+
+.leaflet-control-attribution {
+    font-size: 9px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+    <div class="title">
+        🗺 Куда едем?
+    </div>
+
+    <div class="subtitle">
+        Найдите место или выберите точку на карте
+    </div>
+
+    <div class="search">
+
+        <input
+            id="searchInput"
+            type="text"
+            placeholder="Адрес, магазин или ориентир">
+
+        <button onclick="searchPlace()">🔎</button>
+
+    </div>
+
+</div>
+
+<div id="map"></div>
+
+<div class="bottom">
+
+    <button
+        class="location-button"
+        onclick="findMyLocation()">
+
+        📍 Моё местоположение
+
+    </button>
+
+    <button
+        class="address-button"
+        onclick="manualAddress()">
+
+        ✏️ Указать адрес или ориентир
+
+    </button>
+
+    <div id="selected" class="selected">
+
+        📌 Нажмите на карте, чтобы выбрать место
+
+    </div>
+
+    <button
+        id="chooseButton"
+        class="choose"
+        disabled
+        onclick="choosePlace()">
+
+        ✅ Выбрать это место
+
+    </button>
+
+    <div class="hint">
+        Точку можно передвигать пальцем
+    </div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+const tg =
+    window.Telegram
+    ? window.Telegram.WebApp
+    : null;
+
+if (tg) {
+    tg.ready();
+    tg.expand();
+}
+
+
+/* Аллерой */
+
+const ALLEROY_LAT = 43.21328;
+const ALLEROY_LON = 46.28453;
+
+
+/* Создаём карту */
+
+const map =
+    L.map("map")
+    .setView(
+        [ALLEROY_LAT, ALLEROY_LON],
+        14
+    );
+
+
+/* OpenStreetMap */
+
+L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 19,
+        attribution:
+            "© OpenStreetMap contributors"
+    }
+).addTo(map);
+
+
+/* Переменные */
+
+let marker = null;
+
+let selectedPlace = null;
+
+
+/* Нажатие на карту */
+
+map.on(
+    "click",
+    function(event) {
+
+        setPoint(
+            event.latlng.lat,
+            event.latlng.lng,
+            ""
+        );
+
+    }
+);
+
+
+/* Установка точки */
+
+function setPoint(lat, lon, label) {
+
+    selectedPlace = {
+        lat: lat,
+        lon: lon,
+        label: label || ""
+    };
+
+
+    if (marker) {
+
+        marker.setLatLng([
+            lat,
+            lon
+        ]);
+
+    } else {
+
+        marker =
+            L.marker(
+                [lat, lon],
+                {
+                    draggable: true
+                }
+            )
+            .addTo(map);
+
+
+        marker.on(
+            "dragend",
+            function() {
+
+                const p =
+                    marker.getLatLng();
+
+                setPoint(
+                    p.lat,
+                    p.lng,
+                    ""
+                );
+
+            }
+        );
+
+    }
+
+
+    if (label) {
+
+        document.getElementById(
+            "selected"
+        ).innerText =
+            "📍 " + label;
+
+    } else {
+
+        document.getElementById(
+            "selected"
+        ).innerText =
+            "📍 Точка выбрана на карте";
+
+    }
+
+
+    document.getElementById(
+        "chooseButton"
+    ).disabled = false;
+}
+
+
+/* Поиск */
+
+async function searchPlace() {
+
+    const input =
+        document.getElementById(
+            "searchInput"
+        );
+
+    const query =
+        input.value.trim();
+
+
+    if (!query) {
+        return;
+    }
+
+
+    document.getElementById(
+        "selected"
+    ).innerText =
+        "🔎 Ищем место...";
+
+
+    try {
+
+        const url =
+            "https://nominatim.openstreetmap.org/search" +
+            "?format=jsonv2" +
+            "&limit=5" +
+            "&accept-language=ru" +
+            "&q=" +
+            encodeURIComponent(
+                query +
+                ", Аллерой, Чеченская Республика, Россия"
+            );
+
+
+        const response =
+            await fetch(url);
+
+
+        const results =
+            await response.json();
+
+
+        if (!results.length) {
+
+            document.getElementById(
+                "selected"
+            ).innerText =
+                "⚠️ Не нашли. Поставьте точку вручную.";
+
+            return;
+        }
+
+
+        const place =
+            results[0];
+
+
+        const lat =
+            parseFloat(place.lat);
+
+        const lon =
+            parseFloat(place.lon);
+
+
+        map.setView(
+            [lat, lon],
+            17
+        );
+
+
+        setPoint(
+            lat,
+            lon,
+            place.display_name
+        );
+
+    }
+
+    catch (error) {
+
+        document.getElementById(
+            "selected"
+        ).innerText =
+            "⚠️ Поиск временно недоступен. Выберите точку на карте.";
+
+    }
+}
+
+
+/* Моё местоположение */
+
+function findMyLocation() {
+
+    if (!navigator.geolocation) {
+
+        document.getElementById(
+            "selected"
+        ).innerText =
+            "⚠️ Геолокация недоступна.";
+
+        return;
+    }
+
+
+    document.getElementById(
+        "selected"
+    ).innerText =
+        "📍 Определяем местоположение...";
+
+
+    navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+            const lat =
+                position.coords.latitude;
+
+            const lon =
+                position.coords.longitude;
+
+
+            map.setView(
+                [lat, lon],
+                17
+            );
+
+
+            setPoint(
+                lat,
+                lon,
+                "Моё местоположение"
+            );
+
+        },
+
+        function() {
+
+            document.getElementById(
+                "selected"
+            ).innerText =
+                "⚠️ Разрешите доступ к геолокации.";
+
+        },
+
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 30000
+        }
+
+    );
+}
+
+
+/* Ручной адрес */
+
+function manualAddress() {
+
+    const address =
+        prompt(
+            "Введите адрес или ориентир:\n\nНапример:\nСветофор\nШкола №1\nвозле мечети\nдом 25"
+        );
+
+
+    if (!address) {
+        return;
+    }
+
+
+    selectedPlace = {
+
+        lat: null,
+
+        lon: null,
+
+        label: address
+
+    };
+
+
+    if (marker) {
+
+        marker.remove();
+
+        marker = null;
+
+    }
+
+
+    document.getElementById(
+        "selected"
+    ).innerText =
+        "✏️ " + address;
+
+
+    document.getElementById(
+        "chooseButton"
+    ).disabled = false;
+}
+
+
+/* Передача заказа в Telegram */
+
+function choosePlace() {
+
+    if (!selectedPlace) {
+        return;
+    }
+
+
+    const data = {
+
+        type: "destination",
+
+        lat:
+            selectedPlace.lat,
+
+        lon:
+            selectedPlace.lon,
+
+        label:
+            selectedPlace.label ||
+            "Точка на карте"
+
+    };
+
+
+    if (
+        tg &&
+        tg.sendData
+    ) {
+
+        tg.sendData(
+            JSON.stringify(data)
+        );
+
+
+        setTimeout(
+            function() {
+
+                tg.close();
+
+            },
+            300
+        );
+
+    } else {
+
+        alert(
+            JSON.stringify(
+                data,
+                null,
+                2
+            )
+        );
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
