@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
+
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width, initial-scale=1.0,
-maximum-scale=1.0, user-scalable=no">
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
 
 <title>Аллерой Доставка</title>
 
@@ -15,6 +19,7 @@ maximum-scale=1.0, user-scalable=no">
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
+
 * {
     box-sizing: border-box;
 }
@@ -124,33 +129,35 @@ body {
     font-size: 12px;
     margin-top: 7px;
 }
+
 </style>
+
 </head>
 
 <body>
 
 <div class="header">
 
-    <div class="title">
-        🗺 Куда едем?
-    </div>
+<div class="title">
+🗺 Куда едем?
+</div>
 
-    <div class="subtitle">
-        Найдите место или выберите точку на карте
-    </div>
+<div class="subtitle">
+Найдите адрес или выберите место на карте
+</div>
 
-    <div class="search">
+<div class="search">
 
-        <input
-        id="searchInput"
-        type="text"
-        placeholder="Адрес, магазин или ориентир">
+<input
+id="searchInput"
+type="text"
+placeholder="Адрес, магазин или ориентир">
 
-        <button onclick="searchPlace()">
-            🔎
-        </button>
+<button onclick="searchPlace()">
+🔎
+</button>
 
-    </div>
+</div>
 
 </div>
 
@@ -158,91 +165,98 @@ body {
 
 <div class="bottom">
 
-    <button
-    class="location-button"
-    onclick="findMyLocation()">
+<button
+class="location-button"
+onclick="findMyLocation()">
 
-        📍 Моё местоположение
+📍 Моё местоположение
 
-    </button>
+</button>
 
-    <button
-    class="address-button"
-    onclick="manualAddress()">
+<button
+class="address-button"
+onclick="manualAddress()">
 
-        ✏️ Указать адрес или ориентир
+✏️ Указать адрес или ориентир
 
-    </button>
+</button>
 
-    <div
-    id="selected"
-    class="selected">
+<div
+id="selected"
+class="selected">
 
-        📌 Нажмите на карте, чтобы выбрать место
-
-    </div>
-
-    <button
-    id="chooseButton"
-    class="choose"
-    disabled
-    onclick="choosePlace()">
-
-        ✅ Выбрать это место
-
-    </button>
-
-    <div class="hint">
-        Точку можно передвигать пальцем
-    </div>
+📌 Нажмите на карте, чтобы выбрать место
 
 </div>
 
+<button
+id="chooseButton"
+class="choose"
+disabled
+onclick="choosePlace()">
+
+✅ Выбрать это место
+
+</button>
+
+<div class="hint">
+Нажмите на карту или перетащите 📍
+</div>
+
+</div>
+
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 
 <script>
 
 const tg =
-    window.Telegram
-    ? window.Telegram.WebApp
-    : null;
+window.Telegram
+? window.Telegram.WebApp
+: null;
 
 if (tg) {
+
     tg.ready();
+
     tg.expand();
+
 }
 
 
 /* Аллерой */
 
 const ALLEROY_LAT = 43.21328;
+
 const ALLEROY_LON = 46.28453;
 
 
 /* Карта */
 
 const map =
-    L.map("map")
-    .setView(
-        [
-            ALLEROY_LAT,
-            ALLEROY_LON
-        ],
-        14
-    );
+L.map("map")
+.setView(
+[
+ALLEROY_LAT,
+ALLEROY_LON
+],
+14
+);
 
 
 L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-        attribution:
-            "© OpenStreetMap contributors"
-    }
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+    maxZoom: 19,
+
+    attribution:
+    "© OpenStreetMap contributors"
+}
 ).addTo(map);
 
 
-/* Данные */
+/* Переменные */
 
 let marker = null;
 
@@ -256,25 +270,25 @@ let selectedLabel = "";
 /* Нажатие на карту */
 
 map.on(
-    "click",
-    function(event) {
+"click",
+function(event) {
 
-        setPoint(
-            event.latlng.lat,
-            event.latlng.lng,
-            "Точка на карте"
-        );
+    setPoint(
+        event.latlng.lat,
+        event.latlng.lng,
+        "Точка на карте"
+    );
 
-    }
+}
 );
 
 
 /* Установка точки */
 
 function setPoint(
-    lat,
-    lon,
-    label
+lat,
+lon,
+label
 ) {
 
     selectedLat = lat;
@@ -282,7 +296,7 @@ function setPoint(
     selectedLon = lon;
 
     selectedLabel =
-        label || "Точка на карте";
+    label || "Точка на карте";
 
 
     if (marker) {
@@ -292,150 +306,164 @@ function setPoint(
             lon
         ]);
 
-    } else {
+    }
+
+    else {
 
         marker =
-            L.marker(
-                [
-                    lat,
-                    lon
-                ],
-                {
-                    draggable: true
-                }
-            )
-            .addTo(map);
+        L.marker(
+        [
+            lat,
+            lon
+        ],
+        {
+            draggable: true
+        }
+        )
+        .addTo(map);
 
 
         marker.on(
-            "dragend",
-            function() {
+        "dragend",
+        function() {
 
-                const p =
-                    marker.getLatLng();
+            const p =
+            marker.getLatLng();
 
-                selectedLat =
-                    p.lat;
+            selectedLat =
+            p.lat;
 
-                selectedLon =
-                    p.lng;
+            selectedLon =
+            p.lng;
 
-                selectedLabel =
-                    "Точка на карте";
+            selectedLabel =
+            "Точка на карте";
 
-                document.getElementById(
-                    "selected"
-                ).innerText =
-                    "📍 Точка выбрана на карте";
+            document.getElementById(
+            "selected"
+            ).innerText =
+            "📍 Точка выбрана";
 
-            }
+        }
         );
 
     }
 
 
     document.getElementById(
-        "selected"
+    "selected"
     ).innerText =
-        "📍 " + selectedLabel;
+    "📍 " + selectedLabel;
 
 
     document.getElementById(
-        "chooseButton"
+    "chooseButton"
     ).disabled = false;
+
 }
 
 
-/* Поиск */
+/* Поиск адреса */
 
 async function searchPlace() {
 
     const query =
-        document.getElementById(
-            "searchInput"
-        ).value.trim();
+    document.getElementById(
+    "searchInput"
+    ).value.trim();
 
 
     if (!query) {
+
         return;
+
     }
 
 
     document.getElementById(
-        "selected"
+    "selected"
     ).innerText =
-        "🔎 Ищем место...";
+    "🔎 Ищем адрес...";
 
 
     try {
 
         const url =
-            "https://nominatim.openstreetmap.org/search" +
-            "?format=jsonv2" +
-            "&limit=1" +
-            "&accept-language=ru" +
-            "&q=" +
-            encodeURIComponent(
-                query +
-                ", Аллерой, Чеченская Республика, Россия"
-            );
+        "https://nominatim.openstreetmap.org/search"
+        +
+        "?format=jsonv2"
+        +
+        "&limit=1"
+        +
+        "&accept-language=ru"
+        +
+        "&q="
+        +
+        encodeURIComponent(
+        query
+        +
+        ", Аллерой, Чеченская Республика, Россия"
+        );
 
 
         const response =
-            await fetch(url);
+        await fetch(url);
 
 
         const results =
-            await response.json();
+        await response.json();
 
 
         if (!results.length) {
 
             document.getElementById(
-                "selected"
+            "selected"
             ).innerText =
-                "⚠️ Не нашли. Выберите место на карте.";
+            "⚠️ Адрес не найден. Выберите точку на карте.";
 
             return;
+
         }
 
 
         const place =
-            results[0];
+        results[0];
 
 
         const lat =
-            parseFloat(place.lat);
+        parseFloat(place.lat);
+
 
         const lon =
-            parseFloat(place.lon);
+        parseFloat(place.lon);
 
 
         map.setView(
-            [
-                lat,
-                lon
-            ],
-            17
+        [
+            lat,
+            lon
+        ],
+        17
         );
 
 
         setPoint(
-            lat,
-            lon,
-            place.display_name
+        lat,
+        lon,
+        place.display_name
         );
 
     }
 
-    catch (error) {
+    catch(error) {
 
         document.getElementById(
-            "selected"
+        "selected"
         ).innerText =
-            "⚠️ Поиск недоступен. Выберите точку на карте.";
+        "⚠️ Поиск временно недоступен.";
 
     }
+
 }
 
 
@@ -446,64 +474,70 @@ function findMyLocation() {
     if (!navigator.geolocation) {
 
         document.getElementById(
-            "selected"
+        "selected"
         ).innerText =
-            "⚠️ Геолокация недоступна.";
+        "⚠️ Геолокация недоступна.";
 
         return;
+
     }
 
 
     document.getElementById(
-        "selected"
+    "selected"
     ).innerText =
-        "📍 Определяем местоположение...";
+    "📍 Определяем местоположение...";
 
 
     navigator.geolocation.getCurrentPosition(
 
-        function(position) {
+    function(position) {
 
-            const lat =
-                position.coords.latitude;
+        const lat =
+        position.coords.latitude;
 
-            const lon =
-                position.coords.longitude;
-
-
-            map.setView(
-                [
-                    lat,
-                    lon
-                ],
-                17
-            );
+        const lon =
+        position.coords.longitude;
 
 
-            setPoint(
-                lat,
-                lon,
-                "Моё местоположение"
-            );
+        map.setView(
+        [
+            lat,
+            lon
+        ],
+        17
+        );
 
-        },
 
-        function() {
+        setPoint(
+        lat,
+        lon,
+        "Моё местоположение"
+        );
 
-            document.getElementById(
-                "selected"
-            ).innerText =
-                "⚠️ Разрешите доступ к геолокации.";
+    },
 
-        },
 
-        {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 30000
-        }
+    function() {
+
+        document.getElementById(
+        "selected"
+        ).innerText =
+        "⚠️ Разрешите доступ к геолокации.";
+
+    },
+
+
+    {
+        enableHighAccuracy: true,
+
+        timeout: 10000,
+
+        maximumAge: 30000
+    }
 
     );
+
 }
 
 
@@ -512,13 +546,15 @@ function findMyLocation() {
 function manualAddress() {
 
     const address =
-        prompt(
-            "Введите адрес или ориентир:"
-        );
+    prompt(
+    "Введите адрес или ориентир:"
+    );
 
 
     if (!address) {
+
         return;
+
     }
 
 
@@ -539,18 +575,19 @@ function manualAddress() {
 
 
     document.getElementById(
-        "selected"
+    "selected"
     ).innerText =
-        "✏️ " + address;
+    "✏️ " + address;
 
 
     document.getElementById(
-        "chooseButton"
+    "chooseButton"
     ).disabled = false;
+
 }
 
 
-/* Передача в Telegram */
+/* Выбор места */
 
 function choosePlace() {
 
@@ -561,47 +598,41 @@ function choosePlace() {
     ) {
 
         return;
+
     }
 
 
-    /*
-       Формат:
-
-       DESTINATION|широта|долгота|название
-    */
-
-
     const safeLabel =
-        String(
-            selectedLabel ||
-            "Точка на карте"
-        )
-        .replace(
-            /\|/g,
-            " "
-        );
+    String(
+    selectedLabel ||
+    "Точка на карте"
+    )
+    .replace(
+    /\|/g,
+    " "
+    );
 
 
     const data =
-        "DESTINATION|"
-        +
-        (
-            selectedLat === null
-            ? ""
-            : selectedLat
-        )
-        +
-        "|"
-        +
-        (
-            selectedLon === null
-            ? ""
-            : selectedLon
-        )
-        +
-        "|"
-        +
-        safeLabel;
+    "DESTINATION|"
+    +
+    (
+        selectedLat === null
+        ? ""
+        : selectedLat
+    )
+    +
+    "|"
+    +
+    (
+        selectedLon === null
+        ? ""
+        : selectedLon
+    )
+    +
+    "|"
+    +
+    safeLabel;
 
 
     if (
@@ -612,15 +643,13 @@ function choosePlace() {
         tg.sendData(data);
 
         setTimeout(
-            function() {
-                tg.close();
-            },
-            300
+        function() {
+
+            tg.close();
+
+        },
+        300
         );
-
-    } else {
-
-        alert(data);
 
     }
 
@@ -629,4 +658,5 @@ function choosePlace() {
 </script>
 
 </body>
+
 </html>
