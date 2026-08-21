@@ -1,27 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>Аллерой — выбор места</title>
+<title>Аллерой Доставка — выбор места</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <link
-    href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css"
-    rel="stylesheet">
+  href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css"
+  rel="stylesheet"
+/>
 
-<script
-    src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js">
-</script>
+<script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
@@ -30,262 +24,142 @@ html,
 body {
     margin: 0;
     padding: 0;
-
     width: 100%;
     height: 100%;
-
     overflow: hidden;
-
     font-family: Arial, sans-serif;
 }
 
 #map {
-
     position: absolute;
-
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 170px;
+    inset: 0 0 170px 0;
 }
-
 
 /* Центральная точка */
-
 .center-pin {
-
     position: absolute;
-
     left: 50%;
     top: 50%;
-
-    transform:
-        translate(-50%, -100%);
-
+    transform: translate(-50%, -100%);
     z-index: 10;
-
     font-size: 46px;
-
     pointer-events: none;
-
-    filter:
-        drop-shadow(
-            0 2px 3px
-            rgba(0,0,0,0.4)
-        );
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,.4));
 }
 
-
 /* Верхняя панель */
-
 .top-panel {
-
     position: absolute;
-
     top: 10px;
     left: 10px;
     right: 10px;
-
     z-index: 20;
 }
 
-
-/* Поиск */
-
 .search-box {
-
     display: flex;
-
     gap: 6px;
-
     background: white;
-
     padding: 7px;
-
     border-radius: 12px;
-
-    box-shadow:
-        0 2px 10px
-        rgba(0,0,0,0.2);
+    box-shadow: 0 2px 10px rgba(0,0,0,.2);
 }
 
 #search {
-
     flex: 1;
-
     height: 42px;
-
-    border:
-        1px solid #ddd;
-
+    border: 1px solid #ddd;
     border-radius: 9px;
-
-    padding:
-        0 11px;
-
+    padding: 0 11px;
     font-size: 15px;
-
     outline: none;
 }
 
 .search-button {
-
     width: 48px;
-
     height: 42px;
-
     border: none;
-
     border-radius: 9px;
-
     background: #2481cc;
-
     color: white;
-
     font-size: 20px;
 }
 
-
-/* Кнопки 2D / 3D */
-
 .mode-buttons {
-
     display: flex;
-
     gap: 6px;
-
     margin-top: 7px;
 }
 
 .mode-button {
-
     flex: 1;
-
     height: 40px;
-
     border: none;
-
     border-radius: 9px;
-
     background: white;
-
     color: #222;
-
-    box-shadow:
-        0 2px 7px
-        rgba(0,0,0,0.18);
-
+    box-shadow: 0 2px 7px rgba(0,0,0,.18);
     font-size: 14px;
-
     font-weight: bold;
-
-    cursor: pointer;
 }
 
 .mode-button.active {
-
     background: #2481cc;
-
     color: white;
 }
 
-
 /* Нижняя панель */
-
 .bottom-panel {
-
     position: absolute;
-
     bottom: 0;
     left: 0;
     right: 0;
-
     height: 170px;
-
     background: white;
-
     z-index: 20;
-
-    padding:
-        10px 12px;
-
-    box-shadow:
-        0 -2px 12px
-        rgba(0,0,0,0.18);
+    padding: 10px 12px;
+    box-shadow: 0 -2px 12px rgba(0,0,0,.18);
 }
 
 .title {
-
     font-size: 16px;
-
     font-weight: bold;
-
     margin-bottom: 5px;
 }
 
 .status {
-
     height: 42px;
-
     font-size: 13px;
-
     color: #555;
-
     overflow: hidden;
 }
 
 .select-button {
-
     width: 100%;
-
     height: 48px;
-
     border: none;
-
     border-radius: 11px;
-
     background: #2481cc;
-
     color: white;
-
     font-size: 17px;
-
     font-weight: bold;
-
-    cursor: pointer;
 }
 
 .select-button:active {
-
-    transform:
-        scale(0.98);
+    transform: scale(.98);
 }
-
 </style>
-
 </head>
 
 <body>
 
-
-<!-- Карта -->
-
 <div id="map"></div>
 
-
-<!-- Центральная точка -->
-
-<div class="center-pin">
-    📍
-</div>
-
-
-<!-- Верхняя панель -->
+<div class="center-pin">📍</div>
 
 <div class="top-panel">
 
     <div class="search-box">
-
         <input
             id="search"
             type="text"
@@ -298,9 +172,7 @@ body {
         >
             🔎
         </button>
-
     </div>
-
 
     <div class="mode-buttons">
 
@@ -324,21 +196,15 @@ body {
 
 </div>
 
-
-<!-- Нижняя панель -->
-
 <div class="bottom-panel">
 
     <div class="title">
         🏁 Выберите место назначения
     </div>
 
-    <div
-        id="status"
-        class="status"
-    >
-        Двигайте карту так,
-        чтобы 📍 оказалось на нужном месте.
+    <div id="status" class="status">
+        Двигайте карту так, чтобы 📍 оказалось
+        на нужном месте.
     </div>
 
     <button
@@ -350,337 +216,195 @@ body {
 
 </div>
 
-
 <script>
 
+/* Telegram */
 
-/* =========================================
-   TELEGRAM
-========================================= */
-
-const tg =
-    window.Telegram.WebApp;
+const tg = window.Telegram.WebApp;
 
 tg.ready();
-
 tg.expand();
 
 
-/* =========================================
-   АЛЛЕРОЙ
-========================================= */
+/* Аллерой */
 
-const ALLOY_LAT =
-    43.198435;
-
-const ALLOY_LON =
-    46.278652;
+const ALLOY_LAT = 43.198435;
+const ALLOY_LON = 46.278652;
 
 
-/* =========================================
-   OPENFREEMAP
-========================================= */
+/* OpenFreeMap */
 
 const MAP_STYLE =
     "https://tiles.openfreemap.org/styles/liberty";
 
 
-/* =========================================
-   СОЗДАНИЕ КАРТЫ
-========================================= */
+/* Карта */
 
-const map =
-    new maplibregl.Map({
+const map = new maplibregl.Map({
 
-        container: "map",
+    container: "map",
 
-        style: MAP_STYLE,
+    style: MAP_STYLE,
 
-        center: [
-            ALLOY_LON,
-            ALLOY_LAT
-        ],
+    center: [
+        ALLOY_LON,
+        ALLOY_LAT
+    ],
 
-        zoom: 16,
+    zoom: 16,
 
-        pitch: 0,
+    pitch: 0,
 
-        bearing: 0,
+    bearing: 0,
 
-        attributionControl: true
+    attributionControl: true
 
-    });
+});
 
 
-/* =========================================
-   КООРДИНАТЫ ЦЕНТРА
-========================================= */
+/* Выбранная точка */
 
-let selectedLat =
-    ALLOY_LAT;
-
-let selectedLon =
-    ALLOY_LON;
+let selectedLat = ALLOY_LAT;
+let selectedLon = ALLOY_LON;
 
 
-/* =========================================
-   РЕЖИМ
-========================================= */
+/* Текущий режим */
 
-let currentMode =
-    "2d";
+let currentMode = "2d";
 
 
-/* =========================================
-   ДВИЖЕНИЕ КАРТЫ
-========================================= */
+/* Обновление координат */
 
-map.on(
-    "move",
-    function() {
+map.on("move", function () {
 
-        const center =
-            map.getCenter();
+    const center = map.getCenter();
 
-        selectedLat =
-            center.lat;
+    selectedLat = center.lat;
+    selectedLon = center.lng;
 
-        selectedLon =
-            center.lng;
-
-    }
-);
+});
 
 
-/* =========================================
-   КАРТА ОСТАНОВИЛАСЬ
-========================================= */
+map.on("moveend", function () {
 
-map.on(
-    "moveend",
-    function() {
+    const center = map.getCenter();
 
-        const center =
-            map.getCenter();
+    selectedLat = center.lat;
+    selectedLon = center.lng;
 
-        selectedLat =
-            center.lat;
-
-        selectedLon =
-            center.lng;
-
-        updateStatus();
-
-    }
-);
-
-
-/* =========================================
-   СТАТУС
-========================================= */
-
-function updateStatus() {
-
-    document.getElementById(
-        "status"
-    ).innerText =
-
-        "📍 Координаты: "
-        +
-        selectedLat.toFixed(6)
-        +
-        ", "
-        +
+    document.getElementById("status").innerText =
+        "📍 Координаты: " +
+        selectedLat.toFixed(6) +
+        ", " +
         selectedLon.toFixed(6);
 
-}
+});
 
 
-/* =========================================
-   2D
-========================================= */
+/* 2D */
 
 function set2D() {
 
-    currentMode =
-        "2d";
+    currentMode = "2d";
 
+    document.getElementById("button2d")
+        .classList.add("active");
 
-    document.getElementById(
-        "button2d"
-    ).classList.add("active");
-
-
-    document.getElementById(
-        "button3d"
-    ).classList.remove("active");
-
-
-    /*
-    Полностью сверху
-    */
+    document.getElementById("button3d")
+        .classList.remove("active");
 
     map.easeTo({
 
         pitch: 0,
-
         bearing: 0,
-
         duration: 600
 
     });
 
-
-    document.getElementById(
-        "status"
-    ).innerText =
+    document.getElementById("status").innerText =
         "🗺 Режим 2D";
 
 }
 
 
-/* =========================================
-   3D
-========================================= */
+/* 3D */
 
 function set3D() {
 
-    currentMode =
-        "3d";
+    currentMode = "3d";
 
+    document.getElementById("button3d")
+        .classList.add("active");
 
-    document.getElementById(
-        "button3d"
-    ).classList.add("active");
-
-
-    document.getElementById(
-        "button2d"
-    ).classList.remove("active");
-
-
-    /*
-    Наклоняем карту.
-    Стиль карты НЕ меняем.
-    */
+    document.getElementById("button2d")
+        .classList.remove("active");
 
     map.easeTo({
 
         pitch: 55,
-
         bearing: -15,
-
-        zoom:
-            Math.max(
-                map.getZoom(),
-                16
-            ),
-
         duration: 800
 
     });
 
-
-    document.getElementById(
-        "status"
-    ).innerText =
+    document.getElementById("status").innerText =
         "🏢 Режим 3D";
 
 }
 
 
-/* =========================================
-   ПОИСК АДРЕСА
-========================================= */
+/* Поиск */
 
 async function searchAddress() {
 
     const input =
-        document.getElementById(
-            "search"
-        );
+        document.getElementById("search");
 
     const query =
         input.value.trim();
 
-
     if (!query) {
 
-        document.getElementById(
-            "status"
-        ).innerText =
+        document.getElementById("status").innerText =
             "⚠️ Введите адрес.";
 
         return;
-
     }
 
-
-    document.getElementById(
-        "status"
-    ).innerText =
+    document.getElementById("status").innerText =
         "🔎 Ищем адрес...";
-
 
     try {
 
         const url =
-
-            "https://nominatim.openstreetmap.org/search"
-            +
-            "?format=json"
-            +
-            "&limit=1"
-            +
-            "&accept-language=ru"
-            +
-            "&q="
-            +
+            "https://nominatim.openstreetmap.org/search" +
+            "?format=json" +
+            "&limit=1" +
+            "&accept-language=ru" +
+            "&q=" +
             encodeURIComponent(
-                query
-                +
+                query +
                 ", Аллерой, Чеченская Республика"
             );
-
 
         const response =
             await fetch(url);
 
-
         const results =
             await response.json();
 
+        if (!results || results.length === 0) {
 
-        if (
-            !results
-            ||
-            results.length === 0
-        ) {
-
-            document.getElementById(
-                "status"
-            ).innerText =
+            document.getElementById("status").innerText =
                 "⚠️ Адрес не найден.";
 
             return;
-
         }
 
+        const place = results[0];
 
-        const place =
-            results[0];
-
-
-        selectedLat =
-            parseFloat(
-                place.lat
-            );
-
-        selectedLon =
-            parseFloat(
-                place.lon
-            );
-
+        selectedLat = parseFloat(place.lat);
+        selectedLon = parseFloat(place.lon);
 
         map.flyTo({
 
@@ -705,96 +429,47 @@ async function searchAddress() {
 
         });
 
-
-        document.getElementById(
-            "status"
-        ).innerText =
-
-            "📍 Найдено:\n"
-            +
+        document.getElementById("status").innerText =
+            "📍 Найдено: " +
             place.display_name;
 
     }
 
-    catch(error) {
+    catch (error) {
 
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Не удалось выполнить поиск.";
+        document.getElementById("status").innerText =
+            "⚠️ Ошибка поиска.";
 
     }
 
 }
 
 
-/* =========================================
-   ENTER В ПОИСКЕ
-========================================= */
+/* Enter */
 
-document.getElementById(
-    "search"
-).addEventListener(
-    "keydown",
-    function(event) {
+document.getElementById("search")
+    .addEventListener("keydown", function(event) {
 
-        if (
-            event.key === "Enter"
-        ) {
-
+        if (event.key === "Enter") {
             searchAddress();
-
         }
 
-    }
-);
+    });
 
 
-/* =========================================
-   ВЫБОР МЕСТА
-========================================= */
+/* Выбрать точку */
 
 function selectPlace() {
 
-    if (
-        selectedLat === null
-        ||
-        selectedLon === null
-    ) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Сначала выберите место.";
-
-        return;
-
-    }
-
-
     const data =
-
-        "DESTINATION|"
-        +
-        selectedLat
-        +
-        "|"
-        +
-        selectedLon
-        +
+        "DESTINATION|" +
+        selectedLat +
+        "|" +
+        selectedLon +
         "|Точка на карте";
 
-
-    document.getElementById(
-        "status"
-    ).innerText =
+    document.getElementById("status").innerText =
         "✅ Место выбрано...";
-
-
-    /*
-    Передаём координаты
-    обратно в Telegram
-    */
 
     tg.sendData(data);
 
@@ -803,5 +478,4 @@ function selectPlace() {
 </script>
 
 </body>
-
 </html>
