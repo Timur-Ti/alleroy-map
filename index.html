@@ -2,285 +2,694 @@
 <html lang="ru">
 
 <head>
-    <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
 
-    <title>Аллерой — выбор места</title>
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-    <!-- Telegram Web App -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<title>Аллерой — выбор места</title>
 
-    <!-- MapLibre -->
-    <link
-        href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css"
-        rel="stylesheet"
-    >
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <script
-        src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js">
-    </script>
+<link
+href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css"
+rel="stylesheet">
 
-    <style>
+<script
+src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js">
+</script>
 
-        * {
-            box-sizing: border-box;
-        }
+<style>
 
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        #map {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 135px;
-        }
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
 
-        .center-marker {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -100%);
-            z-index: 10;
+#map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 170px;
+}
 
-            font-size: 45px;
+.center-pin {
+    position: absolute;
 
-            pointer-events: none;
+    left: 50%;
+    top: 50%;
 
-            filter: drop-shadow(
-                0 2px 3px rgba(0,0,0,0.35)
-            );
-        }
+    transform:
+        translate(-50%, -100%);
 
-        .panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
+    z-index: 10;
 
-            height: 135px;
+    font-size: 46px;
 
-            background: white;
+    pointer-events: none;
 
-            padding: 10px 12px;
+    filter:
+        drop-shadow(
+            0 2px 3px
+            rgba(0,0,0,0.4)
+        );
+}
 
-            z-index: 20;
+.top-panel {
 
-            box-shadow:
-                0 -2px 10px
-                rgba(0,0,0,0.15);
-        }
+    position: absolute;
 
-        .title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+    top: 10px;
+    left: 10px;
+    right: 10px;
 
-        .status {
-            font-size: 13px;
-            color: #555;
-            margin-bottom: 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    z-index: 20;
+}
 
-        button {
-            width: 100%;
-            height: 48px;
+.search-box {
 
-            border: none;
-            border-radius: 12px;
+    display: flex;
 
-            background: #2481cc;
-            color: white;
+    gap: 6px;
 
-            font-size: 17px;
-            font-weight: bold;
-        }
+    background: white;
 
-        button:active {
-            transform: scale(0.98);
-        }
+    padding: 7px;
 
-    </style>
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 10px
+        rgba(0,0,0,0.2);
+}
+
+#search {
+
+    flex: 1;
+
+    height: 42px;
+
+    border: 1px solid #ddd;
+
+    border-radius: 9px;
+
+    padding: 0 11px;
+
+    font-size: 15px;
+
+    outline: none;
+}
+
+.search-button {
+
+    width: 48px;
+
+    height: 42px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: #2481cc;
+
+    color: white;
+
+    font-size: 20px;
+}
+
+.mode-buttons {
+
+    display: flex;
+
+    gap: 6px;
+
+    margin-top: 7px;
+}
+
+.mode-buttons button {
+
+    flex: 1;
+
+    height: 38px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background: white;
+
+    box-shadow:
+        0 2px 7px
+        rgba(0,0,0,0.18);
+
+    font-size: 14px;
+
+    font-weight: bold;
+}
+
+.mode-buttons button.active {
+
+    background: #2481cc;
+
+    color: white;
+}
+
+.bottom-panel {
+
+    position: absolute;
+
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    height: 170px;
+
+    background: white;
+
+    z-index: 20;
+
+    padding: 10px 12px;
+
+    box-shadow:
+        0 -2px 12px
+        rgba(0,0,0,0.18);
+}
+
+.title {
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    margin-bottom: 5px;
+}
+
+.status {
+
+    height: 35px;
+
+    font-size: 13px;
+
+    color: #555;
+
+    overflow: hidden;
+}
+
+.select-button {
+
+    width: 100%;
+
+    height: 48px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background: #2481cc;
+
+    color: white;
+
+    font-size: 17px;
+
+    font-weight: bold;
+}
+
+.select-button:active {
+
+    transform: scale(0.98);
+}
+
+</style>
+
 </head>
 
 <body>
 
-    <div id="map"></div>
 
-    <!-- Центральная точка -->
-    <div class="center-marker">
-        📍
-    </div>
+<div id="map"></div>
 
-    <div class="panel">
 
-        <div class="title">
-            🏁 Выберите место назначения
-        </div>
+<!-- Центральная точка -->
 
-        <div
-            id="status"
-            class="status">
-            Двигайте карту так, чтобы 📍 оказалось
-            на нужном месте
-        </div>
+<div class="center-pin">
+    📍
+</div>
 
-        <button onclick="selectPlace()">
-            ✅ Выбрать это место
+
+<!-- Верхняя панель -->
+
+<div class="top-panel">
+
+    <div class="search-box">
+
+        <input
+            id="search"
+            type="text"
+            placeholder="🔎 Введите адрес"
+        >
+
+        <button
+            class="search-button"
+            onclick="searchAddress()"
+        >
+            🔎
         </button>
 
     </div>
 
 
+    <div class="mode-buttons">
+
+        <button
+            id="button2d"
+            class="active"
+            onclick="set2D()"
+        >
+            🗺 2D
+        </button>
+
+        <button
+            id="button3d"
+            onclick="set3D()"
+        >
+            🏢 3D
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- Нижняя панель -->
+
+<div class="bottom-panel">
+
+    <div class="title">
+        🏁 Выберите место назначения
+    </div>
+
+    <div
+        id="status"
+        class="status"
+    >
+        Двигайте карту так,
+        чтобы 📍 оказалось на нужном месте.
+    </div>
+
+    <button
+        class="select-button"
+        onclick="selectPlace()"
+    >
+        ✅ Выбрать это место
+    </button>
+
+</div>
+
+
 <script>
 
-    const tg =
-        window.Telegram.WebApp;
 
-    tg.ready();
+/* =========================================
+   TELEGRAM
+========================================= */
 
-    tg.expand();
+const tg =
+    window.Telegram.WebApp;
 
+tg.ready();
 
-    /*
-    Координаты Аллероя
-    */
-
-    const ALLOY_LAT = 43.198435;
-    const ALLOY_LON = 46.278652;
+tg.expand();
 
 
-    /*
-    Создаём карту OpenFreeMap
-    */
+/* =========================================
+   НАЧАЛЬНАЯ ТОЧКА — АЛЛЕРОЙ
+========================================= */
 
-    const map =
-        new maplibregl.Map({
+const ALLOY_LAT =
+    43.198435;
 
-            container: "map",
-
-            style:
-                "https://tiles.openfreemap.org/styles/liberty",
-
-            center: [
-                ALLOY_LON,
-                ALLOY_LAT
-            ],
-
-            zoom: 15,
-
-            attributionControl: true
-
-        });
+const ALLOY_LON =
+    46.278652;
 
 
-    /*
-    Переменная для выбранных координат
-    */
+/* =========================================
+   СТИЛИ OPENFREEMAP
+========================================= */
 
-    let selectedLat =
-        ALLOY_LAT;
-
-    let selectedLon =
-        ALLOY_LON;
+const STYLE_2D =
+    "https://tiles.openfreemap.org/styles/liberty";
 
 
-    /*
-    Когда пользователь двигает карту,
-    берём координаты центра
-    */
+const STYLE_3D =
+    "https://tiles.openfreemap.org/styles/3d";
 
-    map.on(
-        "move",
+
+/* =========================================
+   СОЗДАЁМ КАРТУ
+========================================= */
+
+const map =
+    new maplibregl.Map({
+
+        container: "map",
+
+        style: STYLE_2D,
+
+        center: [
+            ALLOY_LON,
+            ALLOY_LAT
+        ],
+
+        zoom: 16,
+
+        pitch: 0,
+
+        bearing: 0,
+
+        attributionControl: true
+
+    });
+
+
+/* =========================================
+   ВЫБРАННЫЕ КООРДИНАТЫ
+========================================= */
+
+let selectedLat =
+    ALLOY_LAT;
+
+let selectedLon =
+    ALLOY_LON;
+
+
+/* =========================================
+   ДВИЖЕНИЕ КАРТЫ
+========================================= */
+
+map.on(
+    "move",
+    function() {
+
+        const center =
+            map.getCenter();
+
+        selectedLat =
+            center.lat;
+
+        selectedLon =
+            center.lng;
+
+    }
+);
+
+
+/* =========================================
+   КАРТА ОСТАНОВИЛАСЬ
+========================================= */
+
+map.on(
+    "moveend",
+    function() {
+
+        const center =
+            map.getCenter();
+
+        selectedLat =
+            center.lat;
+
+        selectedLon =
+            center.lng;
+
+
+        document.getElementById(
+            "status"
+        ).innerText =
+
+            "📍 Выбрано: "
+            +
+            selectedLat.toFixed(6)
+            +
+            ", "
+            +
+            selectedLon.toFixed(6);
+
+    }
+);
+
+
+/* =========================================
+   2D
+========================================= */
+
+function set2D() {
+
+    document.getElementById(
+        "button2d"
+    ).classList.add("active");
+
+    document.getElementById(
+        "button3d"
+    ).classList.remove("active");
+
+
+    map.setPitch(0);
+
+    map.setBearing(0);
+
+
+    document.getElementById(
+        "status"
+    ).innerText =
+        "🗺 Режим 2D";
+
+
+}
+
+
+/* =========================================
+   3D
+========================================= */
+
+function set3D() {
+
+    document.getElementById(
+        "button3d"
+    ).classList.add("active");
+
+    document.getElementById(
+        "button2d"
+    ).classList.remove("active");
+
+
+    map.setStyle(STYLE_3D);
+
+
+    map.once(
+        "styledata",
         function() {
 
-            const center =
-                map.getCenter();
+            map.setPitch(55);
 
-            selectedLat =
-                center.lat;
-
-            selectedLon =
-                center.lng;
+            map.setBearing(-15);
 
         }
     );
 
 
-    /*
-    После окончания движения карты
-    обновляем координаты
-    */
+    document.getElementById(
+        "status"
+    ).innerText =
+        "🏢 Режим 3D";
 
-    map.on(
-        "moveend",
-        function() {
+}
 
-            const center =
-                map.getCenter();
 
-            selectedLat =
-                center.lat;
+/* =========================================
+   ПОИСК АДРЕСА
+========================================= */
 
-            selectedLon =
-                center.lng;
+async function searchAddress() {
+
+    const input =
+        document.getElementById(
+            "search"
+        );
+
+    const query =
+        input.value.trim();
+
+
+    if (!query) {
+
+        document.getElementById(
+            "status"
+        ).innerText =
+            "⚠️ Введите адрес.";
+
+        return;
+
+    }
+
+
+    document.getElementById(
+        "status"
+    ).innerText =
+        "🔎 Ищем адрес...";
+
+
+    try {
+
+        const url =
+
+            "https://nominatim.openstreetmap.org/search"
+            +
+            "?format=json"
+            +
+            "&limit=1"
+            +
+            "&accept-language=ru"
+            +
+            "&q="
+            +
+            encodeURIComponent(
+                query
+                +
+                ", Аллерой, Чеченская Республика"
+            );
+
+
+        const response =
+            await fetch(url);
+
+
+        const results =
+            await response.json();
+
+
+        if (
+            !results
+            ||
+            results.length === 0
+        ) {
 
             document.getElementById(
                 "status"
             ).innerText =
-                "📍 Точка выбрана: "
-                +
-                selectedLat.toFixed(6)
-                +
-                ", "
-                +
-                selectedLon.toFixed(6);
+                "⚠️ Адрес не найден. Попробуйте другой запрос.";
+
+            return;
 
         }
-    );
 
 
-    /*
-    Пользователь нажал
-    «Выбрать это место»
-    */
+        const place =
+            results[0];
 
-    function selectPlace() {
 
-        const data =
-            "DESTINATION|"
+        selectedLat =
+            parseFloat(place.lat);
+
+        selectedLon =
+            parseFloat(place.lon);
+
+
+        map.flyTo({
+
+            center: [
+                selectedLon,
+                selectedLat
+            ],
+
+            zoom: 18,
+
+            duration: 1200
+
+        });
+
+
+        document.getElementById(
+            "status"
+        ).innerText =
+            "📍 Найдено: "
             +
-            selectedLat
-            +
-            "|"
-            +
-            selectedLon
-            +
-            "|Точка на карте";
+            place.display_name;
 
-
-        /*
-        Отправляем координаты
-        обратно в Telegram-бот
-        */
-
-        tg.sendData(data);
 
     }
+
+    catch(error) {
+
+        document.getElementById(
+            "status"
+        ).innerText =
+            "⚠️ Ошибка поиска. Попробуйте ещё раз.";
+
+    }
+
+}
+
+
+/* =========================================
+   ENTER В ПОИСКЕ
+========================================= */
+
+document.getElementById(
+    "search"
+).addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Enter"
+        ) {
+
+            searchAddress();
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   ВЫБРАТЬ МЕСТО
+========================================= */
+
+function selectPlace() {
+
+    const data =
+
+        "DESTINATION|"
+        +
+        selectedLat
+        +
+        "|"
+        +
+        selectedLon
+        +
+        "|Точка на карте";
+
+
+    document.getElementById(
+        "status"
+    ).innerText =
+        "✅ Место выбрано. Возвращаемся в Telegram...";
+
+
+    tg.sendData(data);
+
+}
 
 </script>
 
