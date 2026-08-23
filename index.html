@@ -3,396 +3,359 @@
 <head>
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Аллерой Доставка</title>
 
+    <!-- TELEGRAM MINI APP -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- LEAFLET -->
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     >
 
     <style>
+
         html,
         body {
+
             margin: 0;
             padding: 0;
+
             width: 100%;
             height: 100%;
+
             font-family: Arial, sans-serif;
+
+            overflow: hidden;
         }
 
         #map {
+
             width: 100%;
             height: 100%;
         }
 
-        .top {
+        .top-panel {
+
             position: fixed;
+
             top: 10px;
             left: 10px;
             right: 10px;
+
             z-index: 1000;
+
             background: white;
+
+            border-radius: 15px;
+
             padding: 12px;
-            border-radius: 14px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.25);
+
+            box-shadow:
+                0 3px 15px
+                rgba(0,0,0,0.25);
         }
 
         .title {
+
             font-size: 18px;
+
             font-weight: bold;
+
+            margin-bottom: 6px;
         }
 
         .address {
-            margin-top: 6px;
-            font-size: 13px;
+
+            font-size: 14px;
+
+            color: #333;
+
+            line-height: 1.35;
         }
 
-        .bottom {
+        .bottom-panel {
+
             position: fixed;
+
             left: 10px;
             right: 10px;
+
             bottom: 15px;
+
             z-index: 1000;
         }
 
         button {
+
             width: 100%;
-            border: 0;
-            border-radius: 14px;
-            padding: 15px;
+
+            border: none;
+
+            border-radius: 15px;
+
+            padding: 16px;
+
             margin-top: 8px;
+
             font-size: 17px;
+
             font-weight: bold;
         }
 
-        .location {
+        .location-button {
+
             background: white;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.25);
+
+            box-shadow:
+                0 3px 15px
+                rgba(0,0,0,0.25);
         }
 
-        .choose {
+        .choose-button {
+
             background: #1687ff;
+
             color: white;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.25);
+
+            box-shadow:
+                0 3px 15px
+                rgba(0,0,0,0.25);
         }
 
         .status {
+
             background: white;
-            padding: 10px;
+
             border-radius: 12px;
+
+            padding: 10px;
+
+            margin-bottom: 8px;
+
             text-align: center;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.20);
+
+            box-shadow:
+                0 3px 15px
+                rgba(0,0,0,0.20);
+
+            font-size: 14px;
         }
+
     </style>
+
 </head>
 
 <body>
 
-<div class="top">
+
+<div class="top-panel">
 
     <div class="title">
+
         🚚 Аллерой Доставка
+
     </div>
 
     <div
         class="address"
         id="address"
     >
-        📍 Передвиньте карту и выберите место
+
+        📍 Переместите карту и выберите место
+
     </div>
 
 </div>
 
+
 <div id="map"></div>
 
-<div class="bottom">
+
+<div class="bottom-panel">
 
     <div
         class="status"
         id="status"
     >
-        📍 Карта готова
+
+        📍 Готово к выбору места
+
     </div>
 
     <button
-        class="location"
+        class="location-button"
         onclick="myLocation()"
     >
+
         📍 Моё местоположение
+
     </button>
 
     <button
-        class="choose"
+        class="choose-button"
         onclick="choosePlace()"
     >
+
         ✅ Выбрать это место
+
     </button>
 
 </div>
 
+
+<!-- LEAFLET JS -->
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 
 <script>
 
-var tg = null;
+    /*
+    ==========================================
+    TELEGRAM MINI APP
+    ==========================================
+    */
 
-if (
-    window.Telegram &&
-    window.Telegram.WebApp
-) {
-
-    tg = window.Telegram.WebApp;
-
-    tg.ready();
-
-    tg.expand();
-
-}
-
-
-/*
-==========================================
-НАЧАЛЬНАЯ ТОЧКА
-==========================================
-*/
-
-var defaultLat = 43.3178;
-
-var defaultLon = 45.6980;
-
-
-/*
-==========================================
-КАРТА
-==========================================
-*/
-
-var map = L.map("map").setView(
-    [
-        defaultLat,
-        defaultLon
-    ],
-    13
-);
-
-
-/*
-==========================================
-OPENSTREETMAP
-==========================================
-*/
-
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap"
-    }
-).addTo(map);
-
-
-/*
-==========================================
-МАРКЕР
-==========================================
-*/
-
-var marker = L.marker(
-    [
-        defaultLat,
-        defaultLon
-    ]
-).addTo(map);
-
-
-/*
-==========================================
-ТЕКУЩАЯ ТОЧКА
-==========================================
-*/
-
-var selectedLat = defaultLat;
-
-var selectedLon = defaultLon;
-
-
-/*
-==========================================
-ДВИЖЕНИЕ КАРТЫ
-==========================================
-*/
-
-map.on(
-    "move",
-    function() {
-
-        var center = map.getCenter();
-
-        selectedLat = center.lat;
-
-        selectedLon = center.lng;
-
-        marker.setLatLng(
-            [
-                selectedLat,
-                selectedLon
-            ]
-        );
-
-    }
-);
-
-
-/*
-==========================================
-АДРЕС
-==========================================
-*/
-
-map.on(
-    "moveend",
-    function() {
-
-        getAddress(
-            selectedLat,
-            selectedLon
-        );
-
-    }
-);
-
-
-function getAddress(
-    lat,
-    lon
-) {
-
-    document.getElementById(
-        "address"
-    ).innerText =
-        "📍 Определяем адрес...";
-
-
-    var url =
-        "https://nominatim.openstreetmap.org/reverse"
-        +
-        "?format=json"
-        +
-        "&lat="
-        +
-        encodeURIComponent(lat)
-        +
-        "&lon="
-        +
-        encodeURIComponent(lon)
-        +
-        "&zoom=18"
-        +
-        "&addressdetails=1";
-
-
-    fetch(url)
-
-    .then(
-        function(response) {
-
-            return response.json();
-
-        }
-    )
-
-    .then(
-        function(data) {
-
-            if (
-                data &&
-                data.display_name
-            ) {
-
-                document.getElementById(
-                    "address"
-                ).innerText =
-                    "📍 "
-                    +
-                    data.display_name;
-
-            }
-
-            else {
-
-                document.getElementById(
-                    "address"
-                ).innerText =
-                    "📍 Адрес не найден";
-
-            }
-
-        }
-    )
-
-    .catch(
-        function() {
-
-            document.getElementById(
-                "address"
-            ).innerText =
-                "📍 Адрес не определён";
-
-        }
-    );
-
-}
-
-
-/*
-==========================================
-МОЁ МЕСТОПОЛОЖЕНИЕ
-==========================================
-*/
-
-function myLocation() {
+    let tg = null;
 
     if (
-        !navigator.geolocation
+        window.Telegram &&
+        window.Telegram.WebApp
     ) {
+
+        tg = window.Telegram.WebApp;
+
+        tg.ready();
+
+        tg.expand();
+
+        try {
+
+            tg.enableClosingConfirmation();
+
+        } catch (e) {}
+
+    }
+
+
+    /*
+    ==========================================
+    ПРОВЕРКА TELEGRAM
+    ==========================================
+    */
+
+    if (tg) {
 
         document.getElementById(
             "status"
         ).innerText =
-            "⚠️ Геолокация недоступна.";
-
-        return;
+            "✅ Карта подключена к Telegram";
 
     }
 
 
-    document.getElementById(
-        "status"
-    ).innerText =
-        "📍 Получаем местоположение...";
+    /*
+    ==========================================
+    НАЧАЛЬНАЯ ТОЧКА
+    ==========================================
+    */
+
+    const defaultLat = 43.3178;
+
+    const defaultLon = 45.6980;
 
 
-    navigator.geolocation.getCurrentPosition(
+    /*
+    ==========================================
+    СОЗДАНИЕ КАРТЫ
+    ==========================================
+    */
 
-        function(position) {
+    const map = L.map(
+        "map"
+    ).setView(
+        [
+            defaultLat,
+            defaultLon
+        ],
+        13
+    );
+
+
+    /*
+    ==========================================
+    OPEN STREET MAP
+    ==========================================
+    */
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+
+            maxZoom: 19,
+
+            attribution:
+                "&copy; OpenStreetMap"
+
+        }
+    ).addTo(map);
+
+
+    /*
+    ==========================================
+    ЦЕНТРАЛЬНЫЙ МАРКЕР
+    ==========================================
+    */
+
+    let marker = L.marker(
+        [
+            defaultLat,
+            defaultLon
+        ]
+    ).addTo(map);
+
+
+    /*
+    ==========================================
+    ВЫБРАННЫЕ КООРДИНАТЫ
+    ==========================================
+    */
+
+    let selectedLat =
+        defaultLat;
+
+    let selectedLon =
+        defaultLon;
+
+    let selectedAddress =
+        "Точка на карте";
+
+
+    /*
+    ==========================================
+    ДВИЖЕНИЕ КАРТЫ
+    ==========================================
+    */
+
+    map.on(
+        "move",
+        function() {
+
+            const center =
+                map.getCenter();
 
             selectedLat =
-                position.coords.latitude;
+                center.lat;
 
             selectedLon =
-                position.coords.longitude;
-
-
-            map.setView(
-                [
-                    selectedLat,
-                    selectedLon
-                ],
-                16
-            );
-
+                center.lng;
 
             marker.setLatLng(
                 [
@@ -401,131 +364,393 @@ function myLocation() {
                 ]
             );
 
+        }
+    );
 
-            document.getElementById(
-                "status"
-            ).innerText =
-                "✅ Местоположение найдено";
 
+    /*
+    ==========================================
+    ПОСЛЕ ОСТАНОВКИ КАРТЫ
+    ==========================================
+    */
+
+    map.on(
+        "moveend",
+        function() {
+
+            const center =
+                map.getCenter();
+
+            selectedLat =
+                center.lat;
+
+            selectedLon =
+                center.lng;
+
+            marker.setLatLng(
+                [
+                    selectedLat,
+                    selectedLon
+                ]
+            );
 
             getAddress(
                 selectedLat,
                 selectedLon
             );
 
-        },
+        }
+    );
 
-        function() {
+
+    /*
+    ==========================================
+    ПОЛУЧЕНИЕ АДРЕСА
+    ==========================================
+    */
+
+    function getAddress(
+        lat,
+        lon
+    ) {
+
+        document.getElementById(
+            "address"
+        ).innerText =
+            "📍 Определяем адрес...";
+
+
+        const url =
+            "https://nominatim.openstreetmap.org/reverse"
+            +
+            "?format=json"
+            +
+            "&lat="
+            + encodeURIComponent(lat)
+            +
+            "&lon="
+            + encodeURIComponent(lon)
+            +
+            "&zoom=18"
+            +
+            "&addressdetails=1";
+
+
+        fetch(url)
+
+        .then(
+            function(response) {
+
+                return response.json();
+
+            }
+        )
+
+        .then(
+            function(data) {
+
+                if (
+                    data &&
+                    data.display_name
+                ) {
+
+                    selectedAddress =
+                        data.display_name;
+
+                    document.getElementById(
+                        "address"
+                    ).innerText =
+                        "📍 "
+                        +
+                        selectedAddress;
+
+                }
+
+                else {
+
+                    selectedAddress =
+                        "Точка на карте";
+
+                    document.getElementById(
+                        "address"
+                    ).innerText =
+                        "📍 Точка на карте";
+
+                }
+
+            }
+        )
+
+        .catch(
+            function() {
+
+                selectedAddress =
+                    "Точка на карте";
+
+                document.getElementById(
+                    "address"
+                ).innerText =
+                    "📍 Точка на карте";
+
+            }
+        );
+
+    }
+
+
+    /*
+    ==========================================
+    МОЁ МЕСТОПОЛОЖЕНИЕ
+    ==========================================
+    */
+
+    function myLocation() {
+
+        if (
+            !navigator.geolocation
+        ) {
 
             document.getElementById(
                 "status"
             ).innerText =
-                "⚠️ Не удалось получить геопозицию.";
+                "⚠️ Геолокация недоступна.";
 
-        },
+            return;
 
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
         }
 
+
+        document.getElementById(
+            "status"
+        ).innerText =
+            "📍 Получаем местоположение...";
+
+
+        navigator.geolocation.getCurrentPosition(
+
+            function(position) {
+
+                const lat =
+                    position.coords.latitude;
+
+                const lon =
+                    position.coords.longitude;
+
+
+                selectedLat =
+                    lat;
+
+                selectedLon =
+                    lon;
+
+
+                map.setView(
+                    [
+                        lat,
+                        lon
+                    ],
+                    16
+                );
+
+
+                marker.setLatLng(
+                    [
+                        lat,
+                        lon
+                    ]
+                );
+
+
+                document.getElementById(
+                    "status"
+                ).innerText =
+                    "✅ Местоположение найдено";
+
+
+                getAddress(
+                    lat,
+                    lon
+                );
+
+            },
+
+            function() {
+
+                document.getElementById(
+                    "status"
+                ).innerText =
+                    "⚠️ Не удалось получить геопозицию.";
+
+            },
+
+            {
+
+                enableHighAccuracy: true,
+
+                timeout: 15000,
+
+                maximumAge: 0
+
+            }
+
+        );
+
+    }
+
+
+    /*
+    ==========================================
+    ВЫБРАТЬ МЕСТО
+    ==========================================
+    */
+
+    function choosePlace() {
+
+        const lat =
+            Number(selectedLat);
+
+        const lon =
+            Number(selectedLon);
+
+
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lon)
+        ) {
+
+            document.getElementById(
+                "status"
+            ).innerText =
+                "⚠️ Сначала выберите место.";
+
+            return;
+
+        }
+
+
+        /*
+        ======================================
+        ЕСЛИ TELEGRAM НЕ ПЕРЕДАЛ WEB APP
+        ======================================
+        */
+
+        if (!tg) {
+
+            document.getElementById(
+                "status"
+            ).innerText =
+                "⚠️ Карта открыта не как Telegram Mini App.";
+
+            return;
+
+        }
+
+
+        /*
+        ======================================
+        АДРЕС
+        ======================================
+        */
+
+        let address =
+            selectedAddress;
+
+
+        if (
+            !address ||
+            address ===
+            "Адрес определяется..." ||
+            address ===
+            "Точка на карте"
+        ) {
+
+            address =
+                "Точка на карте";
+
+        }
+
+
+        /*
+        ======================================
+        КОД ДЛЯ БОТА
+        ======================================
+        */
+
+        const encodedAddress =
+            encodeURIComponent(
+                address
+            );
+
+
+        const data =
+            "DESTINATION"
+            +
+            "|"
+            +
+            lat.toFixed(6)
+            +
+            "|"
+            +
+            lon.toFixed(6)
+            +
+            "|"
+            +
+            encodedAddress;
+
+
+        /*
+        ======================================
+        ПОКАЗЫВАЕМ ОТПРАВКУ
+        ======================================
+        */
+
+        document.getElementById(
+            "status"
+        ).innerText =
+            "📤 Передаём точку боту...";
+
+
+        /*
+        ======================================
+        ОТПРАВЛЯЕМ В TELEGRAM
+        ======================================
+        */
+
+        try {
+
+            tg.sendData(
+                data
+            );
+
+            document.getElementById(
+                "status"
+            ).innerText =
+                "✅ Точка передана боту";
+
+        }
+
+        catch (error) {
+
+            document.getElementById(
+                "status"
+            ).innerText =
+                "⚠️ Ошибка отправки точки.";
+
+        }
+
+    }
+
+
+    /*
+    ==========================================
+    ПЕРВИЧНЫЙ АДРЕС
+    ==========================================
+    */
+
+    getAddress(
+        selectedLat,
+        selectedLon
     );
-
-}
-
-
-/*
-==========================================
-ВЫБРАТЬ МЕСТО
-==========================================
-*/
-
-function choosePlace() {
-
-    var lat =
-        Number(selectedLat);
-
-    var lon =
-        Number(selectedLon);
-
-
-    if (
-        !isFinite(lat) ||
-        !isFinite(lon)
-    ) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Координаты не определены.";
-
-        return;
-
-    }
-
-
-    /*
-    ======================================
-    ОТПРАВЛЯЕМ ТОЛЬКО КООРДИНАТЫ
-    ======================================
-    */
-
-    var data =
-        "DESTINATION"
-        +
-        "|"
-        +
-        lat.toFixed(6)
-        +
-        "|"
-        +
-        lon.toFixed(6);
-
-
-    document.getElementById(
-        "status"
-    ).innerText =
-        "📤 Передаём точку в Telegram...";
-
-
-    /*
-    ======================================
-    TELEGRAM MINI APP
-    ======================================
-    */
-
-    if (
-        tg &&
-        typeof tg.sendData === "function"
-    ) {
-
-        tg.sendData(data);
-
-    }
-
-    else {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Карта открыта не как Telegram Mini App.";
-
-    }
-
-}
-
-
-/*
-==========================================
-ПЕРВЫЙ АДРЕС
-==========================================
-*/
-
-getAddress(
-    selectedLat,
-    selectedLon
-);
 
 </script>
 
