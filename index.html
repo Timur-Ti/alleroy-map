@@ -1,160 +1,88 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Аллерой Доставка — карта</title>
 
-<title>Аллерой Доставка</title>
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
 
-<link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+        #map {
+            width: 100%;
+            height: 100%;
+        }
 
-<style>
+        #panel {
+            position: fixed;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            z-index: 1000;
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.25);
+        }
 
-* {
-    box-sizing: border-box;
-}
+        #info {
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
 
-html,
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-}
+        #distance {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
 
-#map {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 17px;
+            font-weight: bold;
+            background: #1683ff;
+            color: white;
+        }
 
-.top-panel {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    z-index: 1000;
-    background: white;
-    border-radius: 16px;
-    padding: 13px 15px;
-    box-shadow: 0 3px 16px rgba(0,0,0,0.25);
-}
-
-.title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 7px;
-}
-
-.address {
-    font-size: 14px;
-    color: #333;
-    line-height: 1.35;
-}
-
-.route-info {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #eee;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.bottom-panel {
-    position: fixed;
-    left: 10px;
-    right: 10px;
-    bottom: 15px;
-    z-index: 1000;
-}
-
-.status {
-    background: white;
-    border-radius: 13px;
-    padding: 10px;
-    margin-bottom: 8px;
-    text-align: center;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.20);
-    font-size: 14px;
-}
-
-button {
-    width: 100%;
-    border: none;
-    border-radius: 15px;
-    padding: 16px;
-    margin-top: 8px;
-    font-size: 17px;
-    font-weight: bold;
-}
-
-.location-button {
-    background: white;
-    color: #222;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.25);
-}
-
-.choose-button {
-    background: #1687ff;
-    color: white;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.25);
-}
-
-.choose-button:disabled {
-    background: #9bbfe5;
-}
-
-</style>
+        button:disabled {
+            background: #999;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="top-panel">
-
-    <div class="title">
-        🚚 Аллерой Доставка
-    </div>
-
-    <div id="address" class="address">
-        🏁 Выберите место назначения
-    </div>
-
-    <div id="routeInfo" class="route-info">
-        📏 Расстояние по дороге: —
-    </div>
-
-</div>
-
 <div id="map"></div>
 
-<div class="bottom-panel">
+<div id="panel">
 
-    <div id="status" class="status">
-        📍 Выберите место назначения
+    <div id="info">
+        📍 Сначала выберите место назначения на карте.
     </div>
 
-    <button
-        class="location-button"
-        onclick="myLocation()"
-    >
-        📍 Моё местоположение
-    </button>
+    <div id="distance">
+        📏 Расстояние: —
+    </div>
 
-    <button
-        class="choose-button"
-        id="chooseButton"
-        onclick="choosePlace()"
-    >
+    <button id="sendButton" disabled>
         ✅ Выбрать это место
     </button>
 
@@ -164,760 +92,412 @@ button {
 
 <script>
 
-let tg = null;
+    // ==========================================
+    // TELEGRAM
+    // ==========================================
 
-if (
-    window.Telegram &&
-    window.Telegram.WebApp
-) {
-    tg = window.Telegram.WebApp;
+    const tg = window.Telegram
+        ? window.Telegram.WebApp
+        : null;
 
-    tg.ready();
-    tg.expand();
-}
+    if (tg) {
+        tg.ready();
+        tg.expand();
+    }
 
 
-/*
-==========================================
-ПОЛУЧАЕМ КООРДИНАТЫ ОТПРАВЛЕНИЯ
-==========================================
-*/
+    // ==========================================
+    // ПОЛУЧАЕМ КООРДИНАТЫ ОТПРАВЛЕНИЯ
+    // ==========================================
 
-const params =
-    new URLSearchParams(
+    const params = new URLSearchParams(
         window.location.search
     );
 
-let fromLat =
-    parseFloat(
+    const fromLat = parseFloat(
         params.get("from_lat")
     );
 
-let fromLon =
-    parseFloat(
+    const fromLon = parseFloat(
         params.get("from_lon")
     );
 
 
-/*
-==========================================
-ЕСЛИ КООРДИНАТЫ НЕ ПЕРЕДАНЫ
-==========================================
-*/
+    // ==========================================
+    // ПРОВЕРКА
+    // ==========================================
 
-if (
-    !Number.isFinite(fromLat) ||
-    !Number.isFinite(fromLon)
-) {
+    if (
+        isNaN(fromLat)
+        ||
+        isNaN(fromLon)
+    ) {
 
-    fromLat = 43.3178;
-    fromLon = 45.6980;
+        document.getElementById("info").innerText =
+            "⚠️ Не удалось получить место отправления.";
 
-}
-
-
-/*
-==========================================
-КАРТА
-==========================================
-*/
-
-const map =
-    L.map("map").setView(
-        [
-            fromLat,
-            fromLon
-        ],
-        15
-    );
-
-
-L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-        maxZoom: 19,
-        attribution:
-            "&copy; OpenStreetMap"
     }
-).addTo(map);
 
 
-/*
-==========================================
-ТОЧКА ОТПРАВЛЕНИЯ
-==========================================
-*/
+    // ==========================================
+    // КАРТА
+    // ==========================================
 
-const fromMarker =
-    L.marker(
+    const map = L.map("map").setView(
         [
-            fromLat,
-            fromLon
-        ]
-    ).addTo(map);
-
-fromMarker.bindPopup(
-    "📍 Место отправления"
-);
-
-
-/*
-==========================================
-МАРКЕР НАЗНАЧЕНИЯ
-==========================================
-*/
-
-let marker =
-    L.marker(
-        [
-            fromLat,
-            fromLon
-        ]
-    ).addTo(map);
-
-marker.bindPopup(
-    "🏁 Место назначения"
-);
-
-
-/*
-==========================================
-ПЕРЕМЕННЫЕ
-==========================================
-*/
-
-let selectedLat =
-    fromLat;
-
-let selectedLon =
-    fromLon;
-
-let selectedAddress =
-    "Точка на карте";
-
-let roadDistanceKm =
-    0;
-
-let routeReady =
-    false;
-
-let routeLine =
-    null;
-
-
-/*
-==========================================
-ПОЛУЧЕНИЕ АДРЕСА
-==========================================
-*/
-
-function getAddress(
-    lat,
-    lon
-) {
-
-    document.getElementById(
-        "address"
-    ).innerText =
-        "📍 Определяем адрес...";
-
-
-    const url =
-        "https://nominatim.openstreetmap.org/reverse"
-        +
-        "?format=json"
-        +
-        "&lat="
-        +
-        encodeURIComponent(lat)
-        +
-        "&lon="
-        +
-        encodeURIComponent(lon)
-        +
-        "&zoom=18"
-        +
-        "&addressdetails=1";
-
-
-    fetch(url)
-
-    .then(
-        function(response) {
-            return response.json();
-        }
-    )
-
-    .then(
-        function(data) {
-
-            if (
-                data &&
-                data.display_name
-            ) {
-
-                selectedAddress =
-                    data.display_name;
-
-                document.getElementById(
-                    "address"
-                ).innerText =
-                    "🏁 "
-                    +
-                    selectedAddress;
-
-            }
-
-            else {
-
-                selectedAddress =
-                    "Точка на карте";
-
-                document.getElementById(
-                    "address"
-                ).innerText =
-                    "🏁 Точка на карте";
-
-            }
-
-        }
-    )
-
-    .catch(
-        function() {
-
-            selectedAddress =
-                "Точка на карте";
-
-            document.getElementById(
-                "address"
-            ).innerText =
-                "🏁 Точка на карте";
-
-        }
+            isNaN(fromLat) ? 43.2 : fromLat,
+            isNaN(fromLon) ? 46.28 : fromLon
+        ],
+        14
     );
 
-}
+
+    // ==========================================
+    // OPENSTREETMAP
+    // ==========================================
+
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+            attribution: "© OpenStreetMap"
+        }
+    ).addTo(map);
 
 
-/*
-==========================================
-РАСЧЁТ МАРШРУТА ПО ДОРОГЕ
-OPENROUTE / OSRM
-==========================================
-*/
+    // ==========================================
+    // МАРКЕР ОТПРАВЛЕНИЯ
+    // ==========================================
 
-function calculateRoadRoute() {
+    let fromMarker = null;
 
-    routeReady =
-        false;
+    if (
+        !isNaN(fromLat)
+        &&
+        !isNaN(fromLon)
+    ) {
 
-    roadDistanceKm =
-        0;
+        fromMarker = L.marker(
+            [
+                fromLat,
+                fromLon
+            ]
+        ).addTo(map);
 
-
-    document.getElementById(
-        "status"
-    ).innerText =
-        "🛣 Рассчитываем маршрут по дороге...";
-
-
-    document.getElementById(
-        "routeInfo"
-    ).innerText =
-        "📏 Расстояние по дороге: рассчитывается";
-
-
-    if (routeLine) {
-
-        map.removeLayer(
-            routeLine
+        fromMarker.bindPopup(
+            "📍 Место отправления"
         );
 
-        routeLine =
-            null;
-
+        fromMarker.openPopup();
     }
 
 
-    const url =
-        "https://router.project-osrm.org/route/v1/driving/"
-        +
-        fromLon
-        +
-        ","
-        +
-        fromLat
-        +
-        ";"
-        +
-        selectedLon
-        +
-        ","
-        +
-        selectedLat
-        +
-        "?overview=full"
-        +
-        "&geometries=geojson";
+    // ==========================================
+    // ПЕРЕМЕННЫЕ
+    // ==========================================
+
+    let destinationMarker = null;
+
+    let routeLine = null;
+
+    let destinationLat = null;
+
+    let destinationLon = null;
+
+    let roadDistance = 0;
 
 
-    fetch(url)
+    // ==========================================
+    // КЛИК ПО КАРТЕ
+    // ==========================================
 
-    .then(
-        function(response) {
+    map.on(
+        "click",
+        async function(e) {
 
-            return response.json();
+            destinationLat =
+                e.latlng.lat;
 
-        }
-    )
+            destinationLon =
+                e.latlng.lng;
 
-    .then(
-        function(data) {
 
-            if (
-                data &&
-                data.code === "Ok" &&
-                data.routes &&
-                data.routes.length > 0
-            ) {
+            // ------------------------------
+            // Ставим маркер
+            // ------------------------------
+
+            if (destinationMarker) {
+
+                map.removeLayer(
+                    destinationMarker
+                );
+            }
+
+            destinationMarker =
+                L.marker(
+                    [
+                        destinationLat,
+                        destinationLon
+                    ]
+                )
+                .addTo(map);
+
+            destinationMarker.bindPopup(
+                "🏁 Место назначения"
+            );
+
+            destinationMarker.openPopup();
+
+
+            // ------------------------------
+            // Удаляем старый маршрут
+            // ------------------------------
+
+            if (routeLine) {
+
+                map.removeLayer(
+                    routeLine
+                );
+
+                routeLine = null;
+            }
+
+
+            document.getElementById(
+                "info"
+            ).innerText =
+                "⏳ Рассчитываем маршрут по дороге...";
+
+            document.getElementById(
+                "distance"
+            ).innerText =
+                "📏 Расстояние: рассчитывается...";
+
+            document.getElementById(
+                "sendButton"
+            ).disabled = true;
+
+
+            // ==================================
+            // OSRM — МАРШРУТ ПО ДОРОГЕ
+            // ==================================
+
+            const url =
+                "https://router.project-osrm.org/route/v1/driving/"
+                +
+                fromLon
+                +
+                ","
+                +
+                fromLat
+                +
+                ";"
+                +
+                destinationLon
+                +
+                ","
+                +
+                destinationLat
+                +
+                "?overview=full&geometries=geojson";
+
+
+            try {
+
+                const response =
+                    await fetch(url);
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Ошибка маршрута"
+                    );
+                }
+
+                const result =
+                    await response.json();
+
+
+                if (
+                    !result.routes
+                    ||
+                    result.routes.length === 0
+                ) {
+
+                    throw new Error(
+                        "Маршрут не найден"
+                    );
+                }
+
 
                 const route =
-                    data.routes[0];
+                    result.routes[0];
 
 
-                roadDistanceKm =
+                // ------------------------------
+                // МЕТРЫ → КИЛОМЕТРЫ
+                // ------------------------------
+
+                roadDistance =
                     route.distance / 1000;
 
 
-                roadDistanceKm =
+                roadDistance =
                     Math.round(
-                        roadDistanceKm * 10
+                        roadDistance * 10
                     ) / 10;
 
+
+                // ------------------------------
+                // РИСУЕМ МАРШРУТ
+                // ------------------------------
 
                 routeLine =
                     L.geoJSON(
                         route.geometry,
                         {
                             style: {
-                                weight: 5,
-                                opacity: 0.8
+                                weight: 6
                             }
                         }
                     ).addTo(map);
 
 
+                // ------------------------------
+                // Показываем маршрут
+                // ------------------------------
+
+                map.fitBounds(
+                    routeLine.getBounds(),
+                    {
+                        padding: [30, 30]
+                    }
+                );
+
+
                 document.getElementById(
-                    "routeInfo"
+                    "info"
+                ).innerText =
+                    "🏁 Место назначения выбрано.";
+
+                document.getElementById(
+                    "distance"
                 ).innerText =
                     "📏 Расстояние по дороге: "
                     +
-                    roadDistanceKm
+                    roadDistance
                     +
                     " км";
 
 
                 document.getElementById(
-                    "status"
-                ).innerText =
-                    "✅ Маршрут рассчитан. Можно выбрать место.";
+                    "sendButton"
+                ).disabled = false;
 
 
-                routeReady =
-                    true;
+            } catch(error) {
 
-            }
-
-            else {
+                console.log(error);
 
                 document.getElementById(
-                    "routeInfo"
+                    "info"
                 ).innerText =
-                    "📏 Расстояние по дороге: не найдено";
-
+                    "⚠️ Не удалось построить маршрут по дороге.";
 
                 document.getElementById(
-                    "status"
+                    "distance"
                 ).innerText =
-                    "⚠️ Не удалось построить маршрут.";
+                    "📏 Расстояние: нет данных";
 
+                document.getElementById(
+                    "sendButton"
+                ).disabled = true;
             }
-
-        }
-    )
-
-    .catch(
-        function() {
-
-            document.getElementById(
-                "routeInfo"
-            ).innerText =
-                "📏 Расстояние по дороге: ошибка";
-
-
-            document.getElementById(
-                "status"
-            ).innerText =
-                "⚠️ Не удалось рассчитать маршрут.";
 
         }
     );
 
-}
 
-
-/*
-==========================================
-ДВИЖЕНИЕ КАРТЫ
-==========================================
-*/
-
-map.on(
-    "move",
-    function() {
-
-        const center =
-            map.getCenter();
-
-
-        selectedLat =
-            center.lat;
-
-
-        selectedLon =
-            center.lng;
-
-
-        marker.setLatLng(
-            [
-                selectedLat,
-                selectedLon
-            ]
-        );
-
-    }
-);
-
-
-/*
-==========================================
-КАРТА ОСТАНОВИЛАСЬ
-==========================================
-*/
-
-map.on(
-    "moveend",
-    function() {
-
-        const center =
-            map.getCenter();
-
-
-        selectedLat =
-            center.lat;
-
-
-        selectedLon =
-            center.lng;
-
-
-        marker.setLatLng(
-            [
-                selectedLat,
-                selectedLon
-            ]
-        );
-
-
-        getAddress(
-            selectedLat,
-            selectedLon
-        );
-
-
-        calculateRoadRoute();
-
-    }
-);
-
-
-/*
-==========================================
-МОЁ МЕСТОПОЛОЖЕНИЕ
-==========================================
-*/
-
-function myLocation() {
-
-    if (
-        !navigator.geolocation
-    ) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Геолокация недоступна.";
-
-        return;
-
-    }
-
+    // ==========================================
+    // ОТПРАВКА ДАННЫХ В TELEGRAM
+    // ==========================================
 
     document.getElementById(
-        "status"
-    ).innerText =
-        "📍 Получаем местоположение...";
-
-
-    navigator.geolocation.getCurrentPosition(
-
-        function(position) {
-
-            const lat =
-                position.coords.latitude;
-
-            const lon =
-                position.coords.longitude;
-
-
-            map.setView(
-                [
-                    lat,
-                    lon
-                ],
-                16
-            );
-
-
-            selectedLat =
-                lat;
-
-            selectedLon =
-                lon;
-
-
-            marker.setLatLng(
-                [
-                    lat,
-                    lon
-                ]
-            );
-
-
-            document.getElementById(
-                "status"
-            ).innerText =
-                "✅ Местоположение найдено";
-
-
-            getAddress(
-                lat,
-                lon
-            );
-
-
-            calculateRoadRoute();
-
-        },
-
+        "sendButton"
+    ).addEventListener(
+        "click",
         function() {
 
-            document.getElementById(
-                "status"
-            ).innerText =
-                "⚠️ Не удалось получить геопозицию.";
+            if (
+                destinationLat === null
+                ||
+                destinationLon === null
+                ||
+                roadDistance <= 0
+            ) {
 
-        },
+                alert(
+                    "Сначала выберите место назначения."
+                );
 
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
+                return;
+            }
+
+
+            // ==================================
+            // ВАЖНО
+            //
+            // НЕ ПЕРЕДАЕМ АДРЕС.
+            //
+            // Передаем только:
+            //
+            // DESTINATION
+            // LAT
+            // LON
+            // DISTANCE
+            //
+            // Благодаря этому в Telegram
+            // не появится %D0%...
+            // ==================================
+
+            const data =
+                "DESTINATION|"
+                +
+                destinationLat
+                +
+                "|"
+                +
+                destinationLon
+                +
+                "|"
+                +
+                roadDistance;
+
+
+            if (tg) {
+
+                tg.sendData(
+                    data
+                );
+
+                setTimeout(
+                    function() {
+
+                        tg.close();
+
+                    },
+                    300
+                );
+
+            } else {
+
+                alert(
+                    "Откройте карту через Telegram."
+                );
+            }
+
         }
-
     );
-
-}
-
-
-/*
-==========================================
-ВЫБРАТЬ МЕСТО
-==========================================
-*/
-
-function choosePlace() {
-
-    if (!tg) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Откройте карту внутри Telegram.";
-
-        return;
-
-    }
-
-
-    if (!routeReady) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Сначала дождитесь расчёта маршрута.";
-
-        return;
-
-    }
-
-
-    const lat =
-        Number(
-            selectedLat
-        );
-
-    const lon =
-        Number(
-            selectedLon
-        );
-
-
-    if (
-        !Number.isFinite(lat) ||
-        !Number.isFinite(lon)
-    ) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Сначала выберите место.";
-
-        return;
-
-    }
-
-
-    let address =
-        selectedAddress;
-
-
-    if (!address) {
-
-        address =
-            "Точка на карте";
-
-    }
-
-
-    /*
-    ======================================
-    ПЕРЕДАЁМ БОТУ:
-
-    DESTINATION
-    координаты
-    адрес
-    расстояние ПО ДОРОГЕ
-    ======================================
-    */
-
-    const data =
-        "DESTINATION"
-        +
-        "|"
-        +
-        lat.toFixed(6)
-        +
-        "|"
-        +
-        lon.toFixed(6)
-        +
-        "|"
-        +
-        encodeURIComponent(
-            address
-        )
-        +
-        "|"
-        +
-        roadDistanceKm;
-
-
-    document.getElementById(
-        "status"
-    ).innerText =
-        "📤 Передаём данные боту...";
-
-
-    try {
-
-        tg.sendData(
-            data
-        );
-
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "✅ Место передано боту";
-
-
-        setTimeout(
-            function() {
-
-                try {
-                    tg.close();
-                }
-                catch (e) {}
-
-            },
-            500
-        );
-
-    }
-
-    catch (error) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Ошибка передачи данных.";
-
-    }
-
-}
-
-
-/*
-==========================================
-ПЕРВИЧНЫЙ АДРЕС
-==========================================
-*/
-
-getAddress(
-    selectedLat,
-    selectedLon
-);
-
-
-/*
-==========================================
-ПЕРВИЧНЫЙ МАРШРУТ
-==========================================
-*/
-
-calculateRoadRoute();
-
-
-if (tg) {
-
-    document.getElementById(
-        "status"
-    ).innerText =
-        "📍 Передвиньте карту и выберите назначение.";
-
-}
 
 </script>
 
