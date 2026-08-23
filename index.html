@@ -2,14 +2,17 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
     <title>Аллерой Доставка — карта</title>
 
     <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    >
 
     <style>
         html,
@@ -42,7 +45,7 @@
         #info {
             font-size: 15px;
             line-height: 1.5;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         #distance {
@@ -75,7 +78,7 @@
 <div id="panel">
 
     <div id="info">
-        📍 Сначала выберите место назначения на карте.
+        📍 Выберите место назначения на карте.
     </div>
 
     <div id="distance">
@@ -93,12 +96,14 @@
 <script>
 
     // ==========================================
-    // TELEGRAM
+    // TELEGRAM WEB APP
     // ==========================================
 
-    const tg = window.Telegram
-        ? window.Telegram.WebApp
-        : null;
+    const tg =
+        window.Telegram &&
+        window.Telegram.WebApp
+            ? window.Telegram.WebApp
+            : null;
 
     if (tg) {
         tg.ready();
@@ -110,30 +115,36 @@
     // ПОЛУЧАЕМ КООРДИНАТЫ ОТПРАВЛЕНИЯ
     // ==========================================
 
-    const params = new URLSearchParams(
-        window.location.search
-    );
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
 
-    const fromLat = parseFloat(
-        params.get("from_lat")
-    );
+    const fromLat =
+        parseFloat(
+            params.get("from_lat")
+        );
 
-    const fromLon = parseFloat(
-        params.get("from_lon")
-    );
+    const fromLon =
+        parseFloat(
+            params.get("from_lon")
+        );
 
 
     // ==========================================
     // ПРОВЕРКА
     // ==========================================
 
-    if (
-        isNaN(fromLat)
-        ||
-        isNaN(fromLon)
-    ) {
+    const validFrom =
+        !isNaN(fromLat) &&
+        !isNaN(fromLon);
 
-        document.getElementById("info").innerText =
+
+    if (!validFrom) {
+
+        document.getElementById(
+            "info"
+        ).innerText =
             "⚠️ Не удалось получить место отправления.";
 
     }
@@ -143,13 +154,19 @@
     // КАРТА
     // ==========================================
 
-    const map = L.map("map").setView(
-        [
-            isNaN(fromLat) ? 43.2 : fromLat,
-            isNaN(fromLon) ? 46.28 : fromLon
-        ],
-        14
-    );
+    const map =
+        L.map("map").setView(
+            [
+                validFrom
+                    ? fromLat
+                    : 43.198435,
+
+                validFrom
+                    ? fromLon
+                    : 46.278652
+            ],
+            14
+        );
 
 
     // ==========================================
@@ -166,23 +183,21 @@
 
 
     // ==========================================
-    // МАРКЕР ОТПРАВЛЕНИЯ
+    // ТОЧКА ОТПРАВЛЕНИЯ
     // ==========================================
 
     let fromMarker = null;
 
-    if (
-        !isNaN(fromLat)
-        &&
-        !isNaN(fromLon)
-    ) {
+    if (validFrom) {
 
-        fromMarker = L.marker(
-            [
-                fromLat,
-                fromLon
-            ]
-        ).addTo(map);
+        fromMarker =
+            L.marker(
+                [
+                    fromLat,
+                    fromLon
+                ]
+            )
+            .addTo(map);
 
         fromMarker.bindPopup(
             "📍 Место отправления"
@@ -206,6 +221,75 @@
 
     let roadDistance = 0;
 
+    let destinationAddress =
+        "Точка на карте";
+
+
+    // ==========================================
+    // ПОЛУЧЕНИЕ АДРЕСА
+    // ==========================================
+
+    async function getAddress(
+        lat,
+        lon
+    ) {
+
+        try {
+
+            const url =
+                "https://nominatim.openstreetmap.org/reverse"
+                +
+                "?format=json"
+                +
+                "&lat="
+                + encodeURIComponent(lat)
+                +
+                "&lon="
+                + encodeURIComponent(lon)
+                +
+                "&zoom=18"
+                +
+                "&addressdetails=1";
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        headers: {
+                            "Accept-Language": "ru"
+                        }
+                    }
+                );
+
+            if (!response.ok) {
+
+                return "Точка на карте";
+            }
+
+            const result =
+                await response.json();
+
+            if (
+                result &&
+                result.display_name
+            ) {
+
+                return result.display_name;
+            }
+
+            return "Точка на карте";
+
+        } catch (error) {
+
+            console.log(
+                "Ошибка адреса:",
+                error
+            );
+
+            return "Точка на карте";
+        }
+    }
+
 
     // ==========================================
     // КЛИК ПО КАРТЕ
@@ -215,6 +299,16 @@
         "click",
         async function(e) {
 
+            if (!validFrom) {
+
+                alert(
+                    "Не найдено место отправления."
+                );
+
+                return;
+            }
+
+
             destinationLat =
                 e.latlng.lat;
 
@@ -222,9 +316,9 @@
                 e.latlng.lng;
 
 
-            // ------------------------------
-            // Ставим маркер
-            // ------------------------------
+            // ----------------------------------
+            // НОВЫЙ МАРКЕР
+            // ----------------------------------
 
             if (destinationMarker) {
 
@@ -249,9 +343,9 @@
             destinationMarker.openPopup();
 
 
-            // ------------------------------
-            // Удаляем старый маршрут
-            // ------------------------------
+            // ----------------------------------
+            // УДАЛЯЕМ СТАРЫЙ МАРШРУТ
+            // ----------------------------------
 
             if (routeLine) {
 
@@ -279,10 +373,10 @@
 
 
             // ==================================
-            // OSRM — МАРШРУТ ПО ДОРОГЕ
+            // OSRM
             // ==================================
 
-            const url =
+            const routeUrl =
                 "https://router.project-osrm.org/route/v1/driving/"
                 +
                 fromLon
@@ -305,12 +399,14 @@
             try {
 
                 const response =
-                    await fetch(url);
+                    await fetch(
+                        routeUrl
+                    );
 
                 if (!response.ok) {
 
                     throw new Error(
-                        "Ошибка маршрута"
+                        "Ошибка OSRM"
                     );
                 }
 
@@ -319,8 +415,7 @@
 
 
                 if (
-                    !result.routes
-                    ||
+                    !result.routes ||
                     result.routes.length === 0
                 ) {
 
@@ -334,13 +429,12 @@
                     result.routes[0];
 
 
-                // ------------------------------
-                // МЕТРЫ → КИЛОМЕТРЫ
-                // ------------------------------
+                // ----------------------------------
+                // РАССТОЯНИЕ ПО ДОРОГЕ
+                // ----------------------------------
 
                 roadDistance =
                     route.distance / 1000;
-
 
                 roadDistance =
                     Math.round(
@@ -348,9 +442,9 @@
                     ) / 10;
 
 
-                // ------------------------------
+                // ----------------------------------
                 // РИСУЕМ МАРШРУТ
-                // ------------------------------
+                // ----------------------------------
 
                 routeLine =
                     L.geoJSON(
@@ -363,17 +457,37 @@
                     ).addTo(map);
 
 
-                // ------------------------------
-                // Показываем маршрут
-                // ------------------------------
-
                 map.fitBounds(
                     routeLine.getBounds(),
                     {
-                        padding: [30, 30]
+                        padding: [
+                            40,
+                            40
+                        ]
                     }
                 );
 
+
+                // ----------------------------------
+                // АДРЕС
+                // ----------------------------------
+
+                document.getElementById(
+                    "info"
+                ).innerText =
+                    "⏳ Определяем адрес...";
+
+
+                destinationAddress =
+                    await getAddress(
+                        destinationLat,
+                        destinationLon
+                    );
+
+
+                // ----------------------------------
+                // ГОТОВО
+                // ----------------------------------
 
                 document.getElementById(
                     "info"
@@ -389,20 +503,23 @@
                     +
                     " км";
 
-
                 document.getElementById(
                     "sendButton"
                 ).disabled = false;
 
 
-            } catch(error) {
+            } catch (error) {
 
-                console.log(error);
+                console.log(
+                    error
+                );
+
+                roadDistance = 0;
 
                 document.getElementById(
                     "info"
                 ).innerText =
-                    "⚠️ Не удалось построить маршрут по дороге.";
+                    "⚠️ Не удалось построить маршрут.";
 
                 document.getElementById(
                     "distance"
@@ -419,7 +536,7 @@
 
 
     // ==========================================
-    // ОТПРАВКА ДАННЫХ В TELEGRAM
+    // ОТПРАВКА В TELEGRAM
     // ==========================================
 
     document.getElementById(
@@ -429,10 +546,8 @@
         function() {
 
             if (
-                destinationLat === null
-                ||
-                destinationLon === null
-                ||
+                destinationLat === null ||
+                destinationLon === null ||
                 roadDistance <= 0
             ) {
 
@@ -445,19 +560,23 @@
 
 
             // ==================================
-            // ВАЖНО
+            // КОДИРУЕМ АДРЕС
+            // ==================================
+
+            const encodedAddress =
+                encodeURIComponent(
+                    destinationAddress
+                );
+
+
+            // ==================================
+            // ДАННЫЕ ДЛЯ БОТА
             //
-            // НЕ ПЕРЕДАЕМ АДРЕС.
-            //
-            // Передаем только:
-            //
-            // DESTINATION
-            // LAT
-            // LON
+            // DESTINATION|
+            // LAT|
+            // LON|
+            // ADDRESS|
             // DISTANCE
-            //
-            // Благодаря этому в Telegram
-            // не появится %D0%...
             // ==================================
 
             const data =
@@ -471,6 +590,10 @@
                 +
                 "|"
                 +
+                encodedAddress
+                +
+                "|"
+                +
                 roadDistance;
 
 
@@ -480,13 +603,16 @@
                     data
                 );
 
+                // Не закрываем мгновенно.
+                // Telegram успеет принять данные.
+
                 setTimeout(
                     function() {
 
                         tg.close();
 
                     },
-                    300
+                    800
                 );
 
             } else {
