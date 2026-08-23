@@ -3,179 +3,165 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-    <title>Аллерой Доставка</title>
+<title>Аллерой Доставка</title>
 
-    <!-- Telegram Mini App -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    <!-- Leaflet -->
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    >
+<link rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-    <style>
+<style>
 
-        html,
-        body {
+html,
+body {
 
-            margin: 0;
-            padding: 0;
+    margin: 0;
+    padding: 0;
 
-            width: 100%;
-            height: 100%;
+    width: 100%;
+    height: 100%;
 
-            font-family: Arial, sans-serif;
+    font-family: Arial, sans-serif;
 
-            overflow: hidden;
+    overflow: hidden;
+}
 
-            background: #ffffff;
-        }
+#map {
 
+    width: 100%;
+    height: 100%;
+}
 
-        #map {
+.top-panel {
 
-            width: 100%;
-            height: 100%;
-        }
+    position: fixed;
 
+    top: 10px;
+    left: 10px;
+    right: 10px;
 
-        .top-panel {
+    z-index: 1000;
 
-            position: fixed;
+    background: white;
 
-            top: 10px;
-            left: 10px;
-            right: 10px;
+    border-radius: 15px;
 
-            z-index: 1000;
+    padding: 12px;
 
-            background: #ffffff;
+    box-shadow:
+        0 3px 15px
+        rgba(0,0,0,0.25);
+}
 
-            border-radius: 15px;
+.title {
 
-            padding: 12px;
+    font-size: 18px;
 
-            box-shadow:
-                0 3px 15px
-                rgba(0,0,0,0.25);
-        }
+    font-weight: bold;
 
+    margin-bottom: 6px;
+}
 
-        .title {
+.address {
 
-            font-size: 18px;
+    font-size: 14px;
 
-            font-weight: bold;
+    color: #333;
 
-            margin-bottom: 7px;
-        }
+    line-height: 1.35;
+}
 
+.bottom-panel {
 
-        .address {
+    position: fixed;
 
-            font-size: 14px;
+    left: 10px;
+    right: 10px;
 
-            color: #333333;
+    bottom: 15px;
 
-            line-height: 1.4;
-        }
+    z-index: 1000;
+}
 
+button {
 
-        .bottom-panel {
+    width: 100%;
 
-            position: fixed;
+    border: none;
 
-            left: 10px;
-            right: 10px;
+    border-radius: 15px;
 
-            bottom: 15px;
+    padding: 16px;
 
-            z-index: 1000;
-        }
+    margin-top: 8px;
 
+    font-size: 17px;
 
-        button {
+    font-weight: bold;
+}
 
-            width: 100%;
+.choose-button {
 
-            border: none;
+    background: #1687ff;
 
-            border-radius: 15px;
+    color: white;
 
-            padding: 16px;
+    box-shadow:
+        0 3px 15px
+        rgba(0,0,0,0.25);
+}
 
-            margin-top: 8px;
+.status {
 
-            font-size: 17px;
+    background: white;
 
-            font-weight: bold;
+    border-radius: 12px;
 
-            cursor: pointer;
-        }
+    padding: 10px;
 
+    margin-bottom: 8px;
 
-        .location-button {
+    text-align: center;
 
-            background: #ffffff;
+    box-shadow:
+        0 3px 15px
+        rgba(0,0,0,0.20);
 
-            color: #222222;
+    font-size: 14px;
+}
 
-            box-shadow:
-                0 3px 15px
-                rgba(0,0,0,0.25);
-        }
+.distance {
 
+    background: white;
 
-        .choose-button {
+    border-radius: 12px;
 
-            background: #1687ff;
+    padding: 10px;
 
-            color: #ffffff;
+    margin-bottom: 8px;
 
-            box-shadow:
-                0 3px 15px
-                rgba(0,0,0,0.25);
-        }
+    text-align: center;
 
+    box-shadow:
+        0 3px 15px
+        rgba(0,0,0,0.20);
 
-        .status {
+    font-size: 15px;
 
-            background: #ffffff;
+    font-weight: bold;
+}
 
-            border-radius: 12px;
-
-            padding: 10px;
-
-            margin-bottom: 8px;
-
-            text-align: center;
-
-            box-shadow:
-                0 3px 15px
-                rgba(0,0,0,0.20);
-
-            font-size: 14px;
-        }
-
-    </style>
+</style>
 
 </head>
 
-
 <body>
 
-
-<!-- ======================================
-     ВЕРХНЯЯ ПАНЕЛЬ
-====================================== -->
 
 <div class="top-panel">
 
@@ -185,52 +171,40 @@
 
     </div>
 
-
     <div
         class="address"
         id="address"
     >
 
-        📍 Определяем адрес...
+        📍 Выберите место назначения
 
     </div>
 
 </div>
 
 
-<!-- ======================================
-     КАРТА
-====================================== -->
-
 <div id="map"></div>
 
 
-<!-- ======================================
-     НИЖНЯЯ ПАНЕЛЬ
-====================================== -->
-
 <div class="bottom-panel">
-
 
     <div
         class="status"
         id="status"
     >
 
-        📍 Готово к выбору места
+        📍 Переместите карту
 
     </div>
 
-
-    <button
-        class="location-button"
-        onclick="myLocation()"
+    <div
+        class="distance"
+        id="distance"
     >
 
-        📍 Моё местоположение
+        📏 Расстояние: определяем...
 
-    </button>
-
+    </div>
 
     <button
         class="choose-button"
@@ -244,78 +218,41 @@
 </div>
 
 
-<!-- ======================================
-     LEAFLET
-====================================== -->
-
-<script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
 <script>
 
-
-/* ==========================================
-   TELEGRAM MINI APP
-========================================== */
-
 let tg = null;
-
 
 if (
     window.Telegram &&
     window.Telegram.WebApp
 ) {
 
-    tg =
-        window.Telegram.WebApp;
-
+    tg = window.Telegram.WebApp;
 
     tg.ready();
 
     tg.expand();
-
-
-    document.getElementById(
-        "status"
-    ).innerText =
-        "✅ Карта подключена к Telegram";
-
 }
 
 
-/* ==========================================
-   НАЧАЛЬНЫЕ КООРДИНАТЫ
-========================================== */
+const defaultLat = 43.214527;
 
-const defaultLat =
-    43.3178;
+const defaultLon = 46.277579;
 
 
-const defaultLon =
-    45.6980;
+const map = L.map(
+    "map"
+).setView(
+    [
+        defaultLat,
+        defaultLon
+    ],
+    14
+);
 
-
-/* ==========================================
-   СОЗДАНИЕ КАРТЫ
-========================================== */
-
-const map =
-    L.map(
-        "map"
-    ).setView(
-        [
-            defaultLat,
-            defaultLon
-        ],
-        13
-    );
-
-
-/* ==========================================
-   OPENSTREETMAP
-========================================== */
 
 L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -330,26 +267,16 @@ L.tileLayer(
 ).addTo(map);
 
 
-/* ==========================================
-   ЦЕНТРАЛЬНЫЙ МАРКЕР
-========================================== */
+let marker = L.marker(
+    [
+        defaultLat,
+        defaultLon
+    ]
+).addTo(map);
 
-let marker =
-    L.marker(
-        [
-            defaultLat,
-            defaultLon
-        ]
-    ).addTo(map);
-
-
-/* ==========================================
-   ВЫБРАННЫЕ ДАННЫЕ
-========================================== */
 
 let selectedLat =
     defaultLat;
-
 
 let selectedLon =
     defaultLon;
@@ -359,9 +286,40 @@ let selectedAddress =
     "Точка на карте";
 
 
-/* ==========================================
-   ДВИЖЕНИЕ КАРТЫ
-========================================== */
+let routeDistance =
+    0;
+
+
+let routeLine =
+    null;
+
+
+function setStatus(text) {
+
+    document.getElementById(
+        "status"
+    ).innerText = text;
+
+}
+
+
+function setAddress(text) {
+
+    document.getElementById(
+        "address"
+    ).innerText = text;
+
+}
+
+
+function setDistance(text) {
+
+    document.getElementById(
+        "distance"
+    ).innerText = text;
+
+}
+
 
 map.on(
     "move",
@@ -370,14 +328,11 @@ map.on(
         const center =
             map.getCenter();
 
-
         selectedLat =
             center.lat;
 
-
         selectedLon =
             center.lng;
-
 
         marker.setLatLng(
             [
@@ -389,10 +344,6 @@ map.on(
     }
 );
 
-
-/* ==========================================
-   КАРТА ОСТАНОВИЛАСЬ
-========================================== */
 
 map.on(
     "moveend",
@@ -401,14 +352,11 @@ map.on(
         const center =
             map.getCenter();
 
-
         selectedLat =
             center.lat;
 
-
         selectedLon =
             center.lng;
-
 
         marker.setLatLng(
             [
@@ -417,29 +365,19 @@ map.on(
             ]
         );
 
+        getAddress();
 
-        getAddress(
-            selectedLat,
-            selectedLon
-        );
+        calculateRoute();
 
     }
 );
 
 
-/* ==========================================
-   ПОЛУЧЕНИЕ АДРЕСА
-========================================== */
+function getAddress() {
 
-function getAddress(
-    lat,
-    lon
-) {
-
-    document.getElementById(
-        "address"
-    ).innerText =
-        "📍 Определяем адрес...";
+    setAddress(
+        "📍 Определяем адрес..."
+    );
 
 
     const url =
@@ -448,21 +386,21 @@ function getAddress(
         "?format=json"
         +
         "&lat="
-        +
-        encodeURIComponent(lat)
+        + encodeURIComponent(
+            selectedLat
+        )
         +
         "&lon="
-        +
-        encodeURIComponent(lon)
+        + encodeURIComponent(
+            selectedLon
+        )
         +
         "&zoom=18"
         +
         "&addressdetails=1";
 
 
-    fetch(
-        url
-    )
+    fetch(url)
 
     .then(
         function(response) {
@@ -483,13 +421,11 @@ function getAddress(
                 selectedAddress =
                     data.display_name;
 
-
-                document.getElementById(
-                    "address"
-                ).innerText =
+                setAddress(
                     "📍 "
                     +
-                    selectedAddress;
+                    selectedAddress
+                );
 
             }
 
@@ -498,11 +434,9 @@ function getAddress(
                 selectedAddress =
                     "Точка на карте";
 
-
-                document.getElementById(
-                    "address"
-                ).innerText =
-                    "📍 Точка на карте";
+                setAddress(
+                    "📍 Точка на карте"
+                );
 
             }
 
@@ -515,11 +449,9 @@ function getAddress(
             selectedAddress =
                 "Точка на карте";
 
-
-            document.getElementById(
-                "address"
-            ).innerText =
-                "📍 Точка на карте";
+            setAddress(
+                "📍 Точка на карте"
+            );
 
         }
     );
@@ -527,259 +459,318 @@ function getAddress(
 }
 
 
-/* ==========================================
-   МОЁ МЕСТОПОЛОЖЕНИЕ
-========================================== */
+function calculateRoute() {
 
-function myLocation() {
+    setStatus(
+        "🛣️ Рассчитываем маршрут..."
+    );
+
+    setDistance(
+        "📏 Расстояние: рассчитываем..."
+    );
+
+
+    const fromLat =
+        tg &&
+        tg.initDataUnsafe &&
+        tg.initDataUnsafe.start_param
+        ?
+        null
+        :
+        null;
+
+
+    /*
+    ======================================
+    ВАЖНО
+    ======================================
+
+    Координаты отправления передаются
+    в Mini App через URL.
+
+    Если URL содержит:
+
+    ?fromLat=...
+    ?fromLon=...
+
+    используем их.
+
+    ======================================
+    */
+
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    let startLat =
+        parseFloat(
+            params.get("fromLat")
+        );
+
+    let startLon =
+        parseFloat(
+            params.get("fromLon")
+        );
+
+
+    /*
+    Если координаты отправления
+    не передались, используем
+    текущую точку как запасной вариант.
+    */
 
     if (
-        !navigator.geolocation
+        !Number.isFinite(startLat)
+        ||
+        !Number.isFinite(startLon)
     ) {
 
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Геолокация недоступна.";
+        setStatus(
+            "⚠️ Не получена точка отправления"
+        );
+
+        setDistance(
+            "📏 Расстояние: нет данных"
+        );
+
+        routeDistance = 0;
 
         return;
-
     }
 
 
-    document.getElementById(
-        "status"
-    ).innerText =
-        "📍 Получаем местоположение...";
+    const url =
+        "https://router.project-osrm.org/route/v1/driving/"
+        +
+        startLon
+        +
+        ","
+        +
+        startLat
+        +
+        ";"
+        +
+        selectedLon
+        +
+        ","
+        +
+        selectedLat
+        +
+        "?overview=full"
+        +
+        "&geometries=geojson";
 
 
-    navigator.geolocation.getCurrentPosition(
+    fetch(url)
 
-        function(position) {
+    .then(
+        function(response) {
 
-            const lat =
-                position.coords.latitude;
-
-
-            const lon =
-                position.coords.longitude;
-
-
-            selectedLat =
-                lat;
-
-
-            selectedLon =
-                lon;
-
-
-            map.setView(
-                [
-                    lat,
-                    lon
-                ],
-                16
-            );
-
-
-            marker.setLatLng(
-                [
-                    lat,
-                    lon
-                ]
-            );
-
-
-            document.getElementById(
-                "status"
-            ).innerText =
-                "✅ Местоположение найдено";
-
-
-            getAddress(
-                lat,
-                lon
-            );
-
-        },
-
-
-        function() {
-
-            document.getElementById(
-                "status"
-            ).innerText =
-                "⚠️ Не удалось получить геопозицию.";
-
-        },
-
-
-        {
-
-            enableHighAccuracy:
-                true,
-
-            timeout:
-                15000,
-
-            maximumAge:
-                0
+            return response.json();
 
         }
+    )
 
+    .then(
+        function(data) {
+
+            if (
+                data &&
+                data.code === "Ok"
+                &&
+                data.routes
+                &&
+                data.routes.length > 0
+            ) {
+
+                const route =
+                    data.routes[0];
+
+
+                routeDistance =
+                    route.distance
+                    / 1000;
+
+
+                routeDistance =
+                    Math.round(
+                        routeDistance * 10
+                    ) / 10;
+
+
+                setDistance(
+                    "📏 По дороге: "
+                    +
+                    routeDistance
+                    +
+                    " км"
+                );
+
+
+                setStatus(
+                    "✅ Маршрут рассчитан"
+                );
+
+
+                if (routeLine) {
+
+                    map.removeLayer(
+                        routeLine
+                    );
+
+                }
+
+
+                routeLine =
+                    L.geoJSON(
+                        route.geometry
+                    ).addTo(map);
+
+            }
+
+            else {
+
+                routeDistance = 0;
+
+                setStatus(
+                    "⚠️ Маршрут не найден"
+                );
+
+                setDistance(
+                    "📏 Расстояние: нет маршрута"
+                );
+
+            }
+
+        }
+    )
+
+    .catch(
+        function() {
+
+            routeDistance = 0;
+
+            setStatus(
+                "⚠️ Ошибка расчёта маршрута"
+            );
+
+            setDistance(
+                "📏 Расстояние: нет данных"
+            );
+
+        }
     );
 
 }
 
-
-/* ==========================================
-   ВЫБРАТЬ МЕСТО
-========================================== */
 
 function choosePlace() {
 
-
-    const lat =
-        Number(
-            selectedLat
-        );
-
-
-    const lon =
-        Number(
-            selectedLon
-        );
-
-
-    /* ======================================
-       ПРОВЕРКА КООРДИНАТ
-    ====================================== */
-
     if (
-        !Number.isFinite(lat) ||
-        !Number.isFinite(lon)
+        !tg
     ) {
 
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Координаты не определены.";
+        setStatus(
+            "⚠️ Карта открыта не в Telegram"
+        );
 
         return;
-
     }
-
-
-    /* ======================================
-       ПРОВЕРКА TELEGRAM
-    ====================================== */
-
-    if (!tg) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Telegram Mini App не подключён.";
-
-        return;
-
-    }
-
-
-    /* ======================================
-       АДРЕС
-    ====================================== */
-
-    let address =
-        selectedAddress;
 
 
     if (
-        !address ||
-        address ===
-        "Точка на карте"
+        !routeDistance
+        ||
+        routeDistance <= 0
     ) {
 
-        address =
-            "Точка на карте";
+        setStatus(
+            "⚠️ Сначала дождитесь расчёта маршрута"
+        );
 
+        return;
     }
 
 
-    /* ======================================
-       ДАННЫЕ ДЛЯ БОТА
-       
-       ВАЖНО:
-       НИКАКОГО encodeURIComponent
-       ЗДЕСЬ НЕТ.
-    ====================================== */
+    setStatus(
+        "📤 Передаём заказ боту..."
+    );
+
 
     const data =
-        "DESTINATION"
+        "ROUTE"
         +
         "|"
         +
-        lat.toFixed(6)
+        selectedLat.toFixed(6)
         +
         "|"
         +
-        lon.toFixed(6)
+        selectedLon.toFixed(6)
         +
         "|"
         +
-        address;
-
-
-    /* ======================================
-       ПОКАЗЫВАЕМ СТАТУС
-    ====================================== */
-
-    document.getElementById(
-        "status"
-    ).innerText =
-        "📤 Передаём точку боту...";
-
-
-    /* ======================================
-       ОТПРАВКА В TELEGRAM
-    ====================================== */
-
-    try {
-
-        tg.sendData(
-            data
+        routeDistance.toFixed(1)
+        +
+        "|"
+        +
+        encodeURIComponent(
+            selectedAddress
         );
 
 
-        document.getElementById(
-            "status"
-        ).innerText =
-            "✅ Точка передана боту";
+    /*
+    Исправленный формат:
+
+    ROUTE|
+    latitude|
+    longitude|
+    distance|
+    address
+    */
 
 
-    }
+    const finalData =
+        "ROUTE"
+        +
+        "|"
+        +
+        selectedLat.toFixed(6)
+        +
+        "|"
+        +
+        selectedLon.toFixed(6)
+        +
+        "|"
+        +
+        "unused"
+        +
+        "|"
+        +
+        "unused"
+        +
+        "|"
+        +
+        routeDistance.toFixed(1)
+        +
+        "|"
+        +
+        encodeURIComponent(
+            selectedAddress
+        );
 
-    catch (error) {
 
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Ошибка отправки точки.";
-
-    }
+    tg.sendData(
+        finalData
+    );
 
 }
 
 
-/* ==========================================
-   ПЕРВИЧНО ОПРЕДЕЛЯЕМ АДРЕС
-========================================== */
-
-getAddress(
-    selectedLat,
-    selectedLon
-);
-
+getAddress();
 
 </script>
 
