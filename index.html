@@ -1,170 +1,276 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-<title>Аллерой Доставка</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Аллерой Доставка</title>
 
-<link rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <!-- Telegram Mini App -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<style>
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
 
-html,
-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: Arial, sans-serif;
-    overflow: hidden;
-}
+    <style>
 
-#map {
-    width: 100%;
-    height: 100%;
-}
+        * {
+            box-sizing: border-box;
+        }
 
-.top-panel {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    z-index: 1000;
-    background: white;
-    border-radius: 15px;
-    padding: 12px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.25);
-}
+        html,
+        body {
 
-.title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 6px;
-}
+            margin: 0;
+            padding: 0;
 
-.address {
-    font-size: 14px;
-    color: #333;
-    line-height: 1.35;
-}
+            width: 100%;
+            height: 100%;
 
-.distance {
-    margin-top: 6px;
-    font-size: 15px;
-    font-weight: bold;
-}
+            font-family: Arial, sans-serif;
 
-.bottom-panel {
-    position: fixed;
-    left: 10px;
-    right: 10px;
-    bottom: 15px;
-    z-index: 1000;
-}
+            overflow: hidden;
 
-button {
-    width: 100%;
-    border: none;
-    border-radius: 15px;
-    padding: 16px;
-    margin-top: 8px;
-    font-size: 17px;
-    font-weight: bold;
-}
+            background: #f2f2f2;
+        }
 
-.location-button {
-    background: white;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.25);
-}
+        #map {
 
-.choose-button {
-    background: #1687ff;
-    color: white;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.25);
-}
+            position: fixed;
 
-.choose-button:disabled {
-    background: #999;
-}
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
 
-.cancel-button {
-    background: #eeeeee;
-}
+            width: 100%;
+            height: 100%;
 
-.status {
-    background: white;
-    border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 8px;
-    text-align: center;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.20);
-    font-size: 14px;
-}
+            z-index: 1;
+        }
 
-</style>
+        .top-panel {
+
+            position: fixed;
+
+            top: 10px;
+            left: 10px;
+            right: 10px;
+
+            z-index: 1000;
+
+            background: white;
+
+            border-radius: 16px;
+
+            padding: 13px 15px;
+
+            box-shadow:
+                0 3px 16px
+                rgba(0,0,0,0.25);
+        }
+
+        .title {
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            margin-bottom: 7px;
+        }
+
+        .address {
+
+            font-size: 14px;
+
+            color: #333;
+
+            line-height: 1.35;
+        }
+
+        .route-info {
+
+            margin-top: 8px;
+
+            padding-top: 8px;
+
+            border-top: 1px solid #eee;
+
+            font-size: 14px;
+
+            font-weight: bold;
+        }
+
+        .bottom-panel {
+
+            position: fixed;
+
+            left: 10px;
+            right: 10px;
+
+            bottom: 15px;
+
+            z-index: 1000;
+        }
+
+        .status {
+
+            background: white;
+
+            border-radius: 13px;
+
+            padding: 10px;
+
+            margin-bottom: 8px;
+
+            text-align: center;
+
+            box-shadow:
+                0 3px 15px
+                rgba(0,0,0,0.20);
+
+            font-size: 14px;
+        }
+
+        button {
+
+            width: 100%;
+
+            border: none;
+
+            border-radius: 15px;
+
+            padding: 16px;
+
+            margin-top: 8px;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        .location-button {
+
+            background: white;
+
+            color: #222;
+
+            box-shadow:
+                0 3px 15px
+                rgba(0,0,0,0.25);
+        }
+
+        .choose-button {
+
+            background: #1687ff;
+
+            color: white;
+
+            box-shadow:
+                0 3px 15px
+                rgba(0,0,0,0.25);
+        }
+
+        .choose-button:disabled {
+
+            background: #9bbfe5;
+
+            color: white;
+
+        }
+
+    </style>
+
 </head>
 
 <body>
 
+
 <div class="top-panel">
 
     <div class="title">
+
         🚚 Аллерой Доставка
+
     </div>
 
-    <div class="address" id="address">
-        📍 Переместите карту и выберите место
+    <div
+        class="address"
+        id="address"
+    >
+
+        🏁 Выберите место назначения
+
     </div>
 
-    <div class="distance" id="distance">
-        📏 Расстояние: рассчитываем...
+    <div
+        class="route-info"
+        id="routeInfo"
+    >
+
+        📏 Расстояние: рассчитывается после выбора
+
     </div>
 
 </div>
 
+
 <div id="map"></div>
+
 
 <div class="bottom-panel">
 
-    <div class="status" id="status">
-        📍 Выберите место назначения
+    <div
+        class="status"
+        id="status"
+    >
+
+        📍 Передвиньте карту и выберите место назначения
+
     </div>
 
     <button
         class="location-button"
-        onclick="myLocation()">
+        onclick="myLocation()"
+    >
+
         📍 Моё местоположение
+
     </button>
 
     <button
         class="choose-button"
         id="chooseButton"
         onclick="choosePlace()"
-        disabled>
-        ⏳ Рассчитываем маршрут...
-    </button>
+    >
 
-    <button
-        class="cancel-button"
-        onclick="cancelMap()">
-        ❌ Отмена
+        ✅ Выбрать это место
+
     </button>
 
 </div>
 
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 
 <script>
 
-/* ==========================================
-   TELEGRAM
-========================================== */
+/*
+==================================================
+TELEGRAM MINI APP
+==================================================
+*/
 
 let tg = null;
 
@@ -182,19 +288,24 @@ if (
 }
 
 
-/* ==========================================
-   ПОЛУЧАЕМ ТОЧКУ ОТПРАВЛЕНИЯ ИЗ URL
-========================================== */
+/*
+==================================================
+ПОЛУЧАЕМ КООРДИНАТЫ ОТПРАВЛЕНИЯ
+ИЗ URL
+==================================================
+*/
 
 const params =
     new URLSearchParams(
         window.location.search
     );
 
+
 let fromLat =
     parseFloat(
         params.get("from_lat")
     );
+
 
 let fromLon =
     parseFloat(
@@ -202,84 +313,78 @@ let fromLon =
     );
 
 
-/* ==========================================
-   ЕСЛИ КООРДИНАТЫ НЕ ПЕРЕДАЛИСЬ
-========================================== */
+/*
+==================================================
+ЕСЛИ КООРДИНАТЫ НЕ ПЕРЕДАНЫ
+==================================================
+*/
+
+const defaultLat =
+    43.3178;
+
+
+const defaultLon =
+    45.6980;
+
 
 if (
     !Number.isFinite(fromLat) ||
     !Number.isFinite(fromLon)
 ) {
 
-    /*
-       Запасная точка.
-       Аллерой.
-    */
+    fromLat =
+        defaultLat;
 
-    fromLat = 43.198432;
-    fromLon = 46.278875;
+    fromLon =
+        defaultLon;
 
 }
 
 
-/* ==========================================
-   НАЧАЛЬНАЯ ТОЧКА
-========================================== */
-
-const defaultLat =
-    fromLat;
-
-const defaultLon =
-    fromLon;
-
-
-/* ==========================================
-   КАРТА
-========================================== */
+/*
+==================================================
+НАЧАЛЬНАЯ ТОЧКА
+==================================================
+*/
 
 const map =
-    L.map("map")
-    .setView(
+    L.map(
+        "map"
+    ).setView(
         [
-            defaultLat,
-            defaultLon
+            fromLat,
+            fromLon
         ],
-        14
+        15
     );
 
 
-/* ==========================================
-   OPEN STREET MAP
-========================================== */
+/*
+==================================================
+OPENSTREETMAP
+==================================================
+*/
 
 L.tileLayer(
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
+
         maxZoom: 19,
+
         attribution:
             "&copy; OpenStreetMap"
+
     }
 ).addTo(map);
 
 
-/* ==========================================
-   МАРКЕР НАЗНАЧЕНИЯ
-========================================== */
+/*
+==================================================
+ТОЧКА ОТПРАВЛЕНИЯ
+==================================================
+*/
 
-let marker =
-    L.marker(
-        [
-            defaultLat,
-            defaultLon
-        ]
-    ).addTo(map);
-
-
-/* ==========================================
-   МАРКЕР ОТПРАВЛЕНИЯ
-========================================== */
-
-let fromMarker =
+const fromMarker =
     L.marker(
         [
             fromLat,
@@ -288,123 +393,80 @@ let fromMarker =
     ).addTo(map);
 
 
-/* ==========================================
-   ЛИНИЯ МАРШРУТА
-========================================== */
-
-let routeLine = null;
+fromMarker.bindPopup(
+    "📍 Место отправления"
+);
 
 
-/* ==========================================
-   ВЫБРАННЫЕ ДАННЫЕ
-========================================== */
+/*
+==================================================
+МАРКЕР НАЗНАЧЕНИЯ
+==================================================
+*/
+
+let marker =
+    L.marker(
+        [
+            fromLat,
+            fromLon
+        ]
+    ).addTo(map);
+
+
+marker.bindPopup(
+    "🏁 Место назначения"
+);
+
+
+/*
+==================================================
+ВЫБРАННЫЕ КООРДИНАТЫ
+==================================================
+*/
 
 let selectedLat =
-    defaultLat;
+    fromLat;
+
 
 let selectedLon =
-    defaultLon;
+    fromLon;
+
 
 let selectedAddress =
     "Точка на карте";
 
-let routeDistanceKm =
-    null;
 
-let routeReady =
+/*
+==================================================
+РАЗРЕШЕНА ЛИ ОТПРАВКА
+==================================================
+*/
+
+let canSend =
     false;
 
 
-/* ==========================================
-   ПЕРВИЧНЫЙ СТАТУС
-========================================== */
+/*
+==================================================
+КНОПКА
+==================================================
+*/
 
-document.getElementById(
-    "status"
-).innerText =
-    "📍 Переместите карту на место назначения";
-
-
-/* ==========================================
-   ДВИЖЕНИЕ КАРТЫ
-========================================== */
-
-map.on(
-    "move",
-    function() {
-
-        const center =
-            map.getCenter();
-
-        selectedLat =
-            center.lat;
-
-        selectedLon =
-            center.lng;
-
-        marker.setLatLng(
-            [
-                selectedLat,
-                selectedLon
-            ]
-        );
-
-    }
-);
+const chooseButton =
+    document.getElementById(
+        "chooseButton"
+    );
 
 
-/* ==========================================
-   ОСТАНОВКА КАРТЫ
-========================================== */
-
-map.on(
-    "moveend",
-    function() {
-
-        const center =
-            map.getCenter();
-
-        selectedLat =
-            center.lat;
-
-        selectedLon =
-            center.lng;
-
-        marker.setLatLng(
-            [
-                selectedLat,
-                selectedLon
-            ]
-        );
-
-        routeReady = false;
-
-        document.getElementById(
-            "chooseButton"
-        ).disabled = true;
-
-        document.getElementById(
-            "chooseButton"
-        ).innerText =
-            "⏳ Рассчитываем маршрут...";
-
-        getAddress(
-            selectedLat,
-            selectedLon
-        );
-
-        calculateRoute(
-            selectedLat,
-            selectedLon
-        );
-
-    }
-);
+chooseButton.disabled =
+    false;
 
 
-/* ==========================================
-   ПОЛУЧЕНИЕ АДРЕСА
-========================================== */
+/*
+==================================================
+ПОЛУЧЕНИЕ АДРЕСА
+==================================================
+*/
 
 function getAddress(
     lat,
@@ -423,21 +485,33 @@ function getAddress(
         "?format=json"
         +
         "&lat="
-        + encodeURIComponent(lat)
+        +
+        encodeURIComponent(lat)
         +
         "&lon="
-        + encodeURIComponent(lon)
+        +
+        encodeURIComponent(lon)
         +
         "&zoom=18"
         +
         "&addressdetails=1";
 
 
-    fetch(url)
+    fetch(
+        url,
+        {
+            headers: {
+                "Accept":
+                    "application/json"
+            }
+        }
+    )
 
     .then(
         function(response) {
+
             return response.json();
+
         }
     )
 
@@ -452,14 +526,16 @@ function getAddress(
                 selectedAddress =
                     data.display_name;
 
+
                 document.getElementById(
                     "address"
                 ).innerText =
-                    "📍 "
+                    "🏁 "
                     +
                     selectedAddress;
 
             }
+
             else {
 
                 selectedAddress =
@@ -468,9 +544,12 @@ function getAddress(
                 document.getElementById(
                     "address"
                 ).innerText =
-                    "📍 Точка на карте";
+                    "🏁 Точка на карте";
 
             }
+
+            canSend =
+                true;
 
         }
     )
@@ -481,10 +560,15 @@ function getAddress(
             selectedAddress =
                 "Точка на карте";
 
+
             document.getElementById(
                 "address"
             ).innerText =
-                "📍 Точка на карте";
+                "🏁 Точка на карте";
+
+
+            canSend =
+                true;
 
         }
     );
@@ -492,302 +576,99 @@ function getAddress(
 }
 
 
-/* ==========================================
-   РАСЧЁТ РАССТОЯНИЯ ПО КООРДИНАТАМ
-   ЗАПАСНОЙ ВАРИАНТ
-========================================== */
+/*
+==================================================
+ДВИЖЕНИЕ КАРТЫ
+==================================================
+*/
 
-function straightDistanceKm(
-    lat1,
-    lon1,
-    lat2,
-    lon2
-) {
+map.on(
+    "move",
+    function() {
 
-    const R =
-        6371;
+        const center =
+            map.getCenter();
 
-    const dLat =
-        (
-            lat2 - lat1
-        )
-        *
-        Math.PI
-        /
-        180;
 
-    const dLon =
-        (
-            lon2 - lon1
-        )
-        *
-        Math.PI
-        /
-        180;
+        selectedLat =
+            center.lat;
 
-    const a =
-        Math.sin(
-            dLat / 2
-        )
-        *
-        Math.sin(
-            dLat / 2
-        )
-        +
-        Math.cos(
-            lat1 * Math.PI / 180
-        )
-        *
-        Math.cos(
-            lat2 * Math.PI / 180
-        )
-        *
-        Math.sin(
-            dLon / 2
-        )
-        *
-        Math.sin(
-            dLon / 2
+
+        selectedLon =
+            center.lng;
+
+
+        marker.setLatLng(
+            [
+                selectedLat,
+                selectedLon
+            ]
         );
 
-    const c =
-        2
-        *
-        Math.atan2(
-            Math.sqrt(a),
-            Math.sqrt(1 - a)
-        );
-
-    return R * c;
-
-}
+    }
+);
 
 
-/* ==========================================
-   РАСЧЁТ МАРШРУТА OSRM
-========================================== */
+/*
+==================================================
+КАРТА ОСТАНОВИЛАСЬ
+==================================================
+*/
 
-function calculateRoute(
-    toLat,
-    toLon
-) {
+map.on(
+    "moveend",
+    function() {
 
-    document.getElementById(
-        "distance"
-    ).innerText =
-        "📏 Расстояние: рассчитываем...";
-
-
-    const url =
-        "https://router.project-osrm.org/route/v1/driving/"
-        +
-        fromLon
-        +
-        ","
-        +
-        fromLat
-        +
-        ";"
-        +
-        toLon
-        +
-        ","
-        +
-        toLat
-        +
-        "?overview=full"
-        +
-        "&geometries=geojson";
+        const center =
+            map.getCenter();
 
 
-    fetch(url)
-
-    .then(
-        function(response) {
-
-            if (!response.ok) {
-                throw new Error(
-                    "OSRM error"
-                );
-            }
-
-            return response.json();
-
-        }
-    )
-
-    .then(
-        function(data) {
-
-            if (
-                data &&
-                data.routes &&
-                data.routes.length > 0
-            ) {
-
-                const route =
-                    data.routes[0];
-
-                routeDistanceKm =
-                    route.distance / 1000;
+        selectedLat =
+            center.lat;
 
 
-                document.getElementById(
-                    "distance"
-                ).innerText =
-                    "📏 Расстояние: "
-                    +
-                    routeDistanceKm.toFixed(1)
-                    +
-                    " км";
+        selectedLon =
+            center.lng;
 
 
-                if (
-                    route.geometry &&
-                    route.geometry.coordinates
-                ) {
-
-                    const coordinates =
-                        route.geometry.coordinates
-                        .map(
-                            function(point) {
-
-                                return [
-                                    point[1],
-                                    point[0]
-                                ];
-
-                            }
-                        );
-
-
-                    if (routeLine) {
-
-                        map.removeLayer(
-                            routeLine
-                        );
-
-                    }
-
-
-                    routeLine =
-                        L.polyline(
-                            coordinates,
-                            {
-                                weight: 5
-                            }
-                        ).addTo(map);
-
-                }
-
-
-                routeReady =
-                    true;
-
-                document.getElementById(
-                    "chooseButton"
-                ).disabled = false;
-
-                document.getElementById(
-                    "chooseButton"
-                ).innerText =
-                    "✅ Выбрать это место";
-
-                document.getElementById(
-                    "status"
-                ).innerText =
-                    "✅ Маршрут рассчитан";
-
-            }
-            else {
-
-                useFallbackDistance(
-                    toLat,
-                    toLon
-                );
-
-            }
-
-        }
-    )
-
-    .catch(
-        function() {
-
-            useFallbackDistance(
-                toLat,
-                toLon
-            );
-
-        }
-    );
-
-}
-
-
-/* ==========================================
-   ЗАПАСНОЙ РАСЧЁТ
-========================================== */
-
-function useFallbackDistance(
-    toLat,
-    toLon
-) {
-
-    const distance =
-        straightDistanceKm(
-            fromLat,
-            fromLon,
-            toLat,
-            toLon
+        marker.setLatLng(
+            [
+                selectedLat,
+                selectedLon
+            ]
         );
 
 
-    /*
-       Умножаем на 1.25,
-       чтобы приблизительно учитывать
-       дорожный путь вместо прямой линии.
-    */
-
-    routeDistanceKm =
-        distance * 1.25;
+        canSend =
+            false;
 
 
-    document.getElementById(
-        "distance"
-    ).innerText =
-        "📏 Расстояние: "
-        +
-        routeDistanceKm.toFixed(1)
-        +
-        " км";
+        document.getElementById(
+            "status"
+        ).innerText =
+            "📍 Определяем выбранное место...";
 
 
-    routeReady =
-        true;
+        document.getElementById(
+            "routeInfo"
+        ).innerText =
+            "📏 Расстояние: рассчитывается";
 
 
-    document.getElementById(
-        "chooseButton"
-    ).disabled = false;
+        getAddress(
+            selectedLat,
+            selectedLon
+        );
 
-    document.getElementById(
-        "chooseButton"
-    ).innerText =
-        "✅ Выбрать это место";
-
-    document.getElementById(
-        "status"
-    ).innerText =
-        "✅ Расстояние рассчитано";
+    }
+);
 
 
-}
-
-
-/* ==========================================
-   МОЁ МЕСТОПОЛОЖЕНИЕ
-========================================== */
+/*
+==================================================
+МОЁ МЕСТОПОЛОЖЕНИЕ
+==================================================
+*/
 
 function myLocation() {
 
@@ -818,14 +699,18 @@ function myLocation() {
             const lat =
                 position.coords.latitude;
 
+
             const lon =
                 position.coords.longitude;
 
 
-            /*
-               Здесь пользователь выбирает
-               новое место назначения.
-            */
+            selectedLat =
+                lat;
+
+
+            selectedLon =
+                lon;
+
 
             map.setView(
                 [
@@ -834,13 +719,6 @@ function myLocation() {
                 ],
                 16
             );
-
-
-            selectedLat =
-                lat;
-
-            selectedLon =
-                lon;
 
 
             marker.setLatLng(
@@ -854,7 +732,7 @@ function myLocation() {
             document.getElementById(
                 "status"
             ).innerText =
-                "📍 Местоположение найдено";
+                "✅ Местоположение найдено";
 
 
             getAddress(
@@ -862,13 +740,8 @@ function myLocation() {
                 lon
             );
 
-
-            calculateRoute(
-                lat,
-                lon
-            );
-
         },
+
 
         function() {
 
@@ -879,10 +752,18 @@ function myLocation() {
 
         },
 
+
         {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
+
+            enableHighAccuracy:
+                true,
+
+            timeout:
+                15000,
+
+            maximumAge:
+                0
+
         }
 
     );
@@ -890,23 +771,20 @@ function myLocation() {
 }
 
 
-/* ==========================================
-   ВЫБРАТЬ МЕСТО
-========================================== */
+/*
+==================================================
+ВЫБОР МЕСТА
+==================================================
+*/
 
 function choosePlace() {
 
-    if (
-        !routeReady ||
-        !Number.isFinite(
-            routeDistanceKm
-        )
-    ) {
+    if (!tg) {
 
         document.getElementById(
             "status"
         ).innerText =
-            "⚠️ Сначала дождитесь расчёта маршрута.";
+            "⚠️ Откройте карту внутри Telegram.";
 
         return;
 
@@ -914,10 +792,15 @@ function choosePlace() {
 
 
     const lat =
-        Number(selectedLat);
+        Number(
+            selectedLat
+        );
+
 
     const lon =
-        Number(selectedLon);
+        Number(
+            selectedLon
+        );
 
 
     if (
@@ -928,19 +811,7 @@ function choosePlace() {
         document.getElementById(
             "status"
         ).innerText =
-            "⚠️ Не удалось определить точку.";
-
-        return;
-
-    }
-
-
-    if (!tg) {
-
-        document.getElementById(
-            "status"
-        ).innerText =
-            "⚠️ Карта открыта не как Telegram Mini App.";
+            "⚠️ Сначала выберите место.";
 
         return;
 
@@ -952,8 +823,7 @@ function choosePlace() {
 
 
     if (
-        !address ||
-        address === "Точка на карте"
+        !address
     ) {
 
         address =
@@ -962,20 +832,14 @@ function choosePlace() {
     }
 
 
-    const encodedAddress =
-        encodeURIComponent(
-            address
-        );
-
-
     /*
-       Передаём:
-       DESTINATION
-       широта
-       долгота
-       адрес
-       расстояние
+    ==============================================
+    ВАЖНО:
+    НЕ КОДИРУЕМ АДРЕС ВРУЧНУЮ.
+    Telegram получит обычный текст.
+    ==============================================
     */
+
 
     const data =
         "DESTINATION"
@@ -990,17 +854,13 @@ function choosePlace() {
         +
         "|"
         +
-        encodedAddress
-        +
-        "|"
-        +
-        routeDistanceKm.toFixed(2);
+        address;
 
 
     document.getElementById(
         "status"
     ).innerText =
-        "📤 Передаём данные боту...";
+        "📤 Передаём место боту...";
 
 
     try {
@@ -1009,6 +869,34 @@ function choosePlace() {
             data
         );
 
+
+        document.getElementById(
+            "status"
+        ).innerText =
+            "✅ Место передано боту";
+
+
+        /*
+        Закрываем Mini App
+        после успешной передачи.
+        */
+
+        setTimeout(
+            function() {
+
+                try {
+
+                    tg.close();
+
+                }
+
+                catch (e) {}
+
+            },
+            500
+        );
+
+
     }
 
     catch (error) {
@@ -1016,43 +904,39 @@ function choosePlace() {
         document.getElementById(
             "status"
         ).innerText =
-            "⚠️ Ошибка отправки данных.";
+            "⚠️ Ошибка передачи данных.";
 
     }
 
 }
 
 
-/* ==========================================
-   ОТМЕНА
-========================================== */
-
-function cancelMap() {
-
-    if (tg) {
-
-        tg.sendData(
-            "CANCEL"
-        );
-
-    }
-
-}
-
-
-/* ==========================================
-   ПЕРВИЧНЫЙ АДРЕС И РАСЧЁТ
-========================================== */
+/*
+==================================================
+ПЕРВИЧНЫЙ АДРЕС
+==================================================
+*/
 
 getAddress(
     selectedLat,
     selectedLon
 );
 
-calculateRoute(
-    selectedLat,
-    selectedLon
-);
+
+/*
+==================================================
+СТАТУС
+==================================================
+*/
+
+if (tg) {
+
+    document.getElementById(
+        "status"
+    ).innerText =
+        "📍 Выберите место назначения на карте.";
+
+}
 
 </script>
 
